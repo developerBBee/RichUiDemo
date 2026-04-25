@@ -28,7 +28,7 @@ fun AppNavigation() {
 
     NavDisplay(
         backStack = backStack,
-        onBack = { backStack.removeLastOrNull() },
+        onBack = { if (backStack.size > 1) backStack.removeLastOrNull() },
         entryProvider = entryProvider {
             entry<HomeRoute> {
                 HomeScreen(

@@ -43,6 +43,7 @@ fun HomeScreen(
     onNavigateToSurfaceDemo: () -> Unit,
     onNavigateToCombinedDemo: () -> Unit,
     onNavigateToHorizontalScrollCards: () -> Unit,
+    onNavigateToWidgetSamples: () -> Unit,
 ) {
     Scaffold(
         topBar = {
@@ -217,6 +218,45 @@ fun HomeScreen(
                             text = "Tap to explore  →",
                             style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onSecondaryContainer,
+                        )
+                    }
+                }
+            }
+
+            item {
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+            }
+
+            item {
+                DemoSectionCard(
+                    title = "Widget Samples",
+                    description = "Music player · stats rings · weather · countdown timer",
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = onNavigateToWidgetSamples,
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                    ),
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(96.dp)
+                            .padding(horizontal = 20.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                    ) {
+                        Text(
+                            text = "🎵  📊  🌤️  ⏱️",
+                            style = MaterialTheme.typography.titleMedium,
+                        )
+                        Text(
+                            text = "Tap to explore  →",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onTertiaryContainer,
                         )
                     }
                 }

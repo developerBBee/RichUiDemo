@@ -21,6 +21,7 @@ import jp.developer.bbee.richuidemo.screen.CombinedDemoScreen
 import jp.developer.bbee.richuidemo.screen.HomeScreen
 import jp.developer.bbee.richuidemo.screen.HorizontalScrollCardsScreen
 import jp.developer.bbee.richuidemo.screen.SurfaceDemoScreen
+import jp.developer.bbee.richuidemo.screen.WidgetSamplesScreen
 
 @Composable
 fun AppNavigation() {
@@ -36,6 +37,7 @@ fun AppNavigation() {
                     onNavigateToSurfaceDemo = { backStack.add(SurfaceDemoRoute) },
                     onNavigateToCombinedDemo = { backStack.add(CombinedDemoRoute) },
                     onNavigateToHorizontalScrollCards = { backStack.add(HorizontalScrollCardsRoute) },
+                    onNavigateToWidgetSamples = { backStack.add(WidgetSamplesRoute) },
                 )
             }
 
@@ -104,6 +106,29 @@ fun AppNavigation() {
                 },
             ) {
                 CombinedDemoScreen(onBack = { backStack.removeLastOrNull() })
+            }
+
+            // Horizontal slide: widget samples
+            entry<WidgetSamplesRoute>(
+                metadata = NavDisplay.transitionSpec {
+                    slideInHorizontally(
+                        initialOffsetX = { it },
+                        animationSpec = tween(350, easing = FastOutSlowInEasing),
+                    ) togetherWith slideOutHorizontally(
+                        targetOffsetX = { -it / 3 },
+                        animationSpec = tween(350, easing = FastOutLinearInEasing),
+                    )
+                } + NavDisplay.popTransitionSpec {
+                    slideInHorizontally(
+                        initialOffsetX = { -it / 3 },
+                        animationSpec = tween(350, easing = FastOutSlowInEasing),
+                    ) togetherWith slideOutHorizontally(
+                        targetOffsetX = { it },
+                        animationSpec = tween(350, easing = FastOutLinearInEasing),
+                    )
+                },
+            ) {
+                WidgetSamplesScreen(onBack = { backStack.removeLastOrNull() })
             }
 
             // Horizontal slide: same as BorderDemo — standard Android forward/back feel

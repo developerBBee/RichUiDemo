@@ -9,11 +9,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -29,6 +25,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import jp.developer.bbee.richuidemo.component.AnimatedBorderCard
+import jp.developer.bbee.richuidemo.component.BackNavigationIcon
 import jp.developer.bbee.richuidemo.component.AnimatedSurfaceCard
 import jp.developer.bbee.richuidemo.component.DemoSectionLabel
 import kotlin.time.Duration.Companion.milliseconds
@@ -41,14 +38,7 @@ fun CombinedDemoScreen(onBack: () -> Unit) {
         topBar = {
             TopAppBar(
                 title = { Text("Combined Effect") },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back",
-                        )
-                    }
-                },
+                navigationIcon = { BackNavigationIcon(onClick = onBack) },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surfaceContainer,
                 ),

@@ -81,19 +81,25 @@ fun AppNavigation() {
             // Scale + fade: modal-like emphasis animation
             entry<CombinedDemoRoute>(
                 metadata = NavDisplay.transitionSpec {
-                    (scaleIn(
+                    val enter = scaleIn(
                         initialScale = 0.82f,
                         animationSpec = tween(400, easing = FastOutSlowInEasing),
-                    ) + fadeIn(animationSpec = tween(350, easing = FastOutSlowInEasing))) togetherWith
-                        (scaleOut(targetScale = 0.96f, animationSpec = tween(280)) +
-                            fadeOut(animationSpec = tween(280)))
+                    ) + fadeIn(animationSpec = tween(350, easing = FastOutSlowInEasing))
+                    val exit = scaleOut(
+                        targetScale = 0.96f,
+                        animationSpec = tween(280),
+                    ) + fadeOut(animationSpec = tween(280))
+                    enter togetherWith exit
                 } + NavDisplay.popTransitionSpec {
-                    (scaleIn(initialScale = 0.96f, animationSpec = tween(280)) +
-                        fadeIn(animationSpec = tween(280))) togetherWith
-                        (scaleOut(
-                            targetScale = 0.82f,
-                            animationSpec = tween(400, easing = FastOutLinearInEasing),
-                        ) + fadeOut(animationSpec = tween(400, easing = FastOutLinearInEasing)))
+                    val enter = scaleIn(
+                        initialScale = 0.96f,
+                        animationSpec = tween(280),
+                    ) + fadeIn(animationSpec = tween(280))
+                    val exit = scaleOut(
+                        targetScale = 0.82f,
+                        animationSpec = tween(400, easing = FastOutLinearInEasing),
+                    ) + fadeOut(animationSpec = tween(400, easing = FastOutLinearInEasing))
+                    enter togetherWith exit
                 },
             ) {
                 CombinedDemoScreen(onBack = { backStack.removeLastOrNull() })

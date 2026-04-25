@@ -1,6 +1,6 @@
 package jp.developer.bbee.richuidemo.component
 
-import androidx.compose.animation.animateColor
+import androidx.compose.animation.core.animateColor
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -28,6 +28,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -78,14 +79,15 @@ fun WeatherWidget(
             .clip(RoundedCornerShape(24.dp))
             .background(Brush.verticalGradient(listOf(skyTop, skyBottom))),
     ) {
-        // Decorative floating sun/icon in top-right
+        // Decorative floating sun/icon in top-right — hidden from accessibility
         Text(
             text = "☀️",
             fontSize = 72.sp,
             modifier = Modifier
                 .align(Alignment.TopEnd)
                 .padding(top = 8.dp, end = 12.dp)
-                .scale(iconScale),
+                .scale(iconScale)
+                .clearAndSetSemantics {},
         )
 
         Column(

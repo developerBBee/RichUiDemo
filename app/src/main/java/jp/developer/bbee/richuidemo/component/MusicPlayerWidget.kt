@@ -44,6 +44,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -229,6 +231,7 @@ fun MusicPlayerWidget(
                         progressFraction = 0f
                         trackIndex = (trackIndex - 1 + demoTracks.size) % demoTracks.size
                     },
+                    modifier = Modifier.semantics { contentDescription = "Previous track" },
                 ) {
                     Text("⏮", fontSize = 22.sp, color = MaterialTheme.colorScheme.onSurface)
                 }
@@ -252,6 +255,7 @@ fun MusicPlayerWidget(
                         progressFraction = 0f
                         trackIndex = (trackIndex + 1) % demoTracks.size
                     },
+                    modifier = Modifier.semantics { contentDescription = "Next track" },
                 ) {
                     Text("⏭", fontSize = 22.sp, color = MaterialTheme.colorScheme.onSurface)
                 }

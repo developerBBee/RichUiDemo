@@ -1,8 +1,6 @@
 package jp.developer.bbee.richuidemo.screen
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -31,6 +29,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import jp.developer.bbee.richuidemo.component.AnimatedBorderCard
 import jp.developer.bbee.richuidemo.component.AnimatedSurfaceCard
+import jp.developer.bbee.richuidemo.component.DemoSectionLabel
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.DurationUnit
 
@@ -63,7 +62,7 @@ fun CombinedDemoScreen(onBack: () -> Unit) {
             verticalArrangement = Arrangement.spacedBy(24.dp),
         ) {
             item {
-                CombinedLabel(
+                DemoSectionLabel(
                     title = "Classic",
                     description = "Magenta/Cyan border · Surface shimmer · 10 s",
                 )
@@ -90,7 +89,7 @@ fun CombinedDemoScreen(onBack: () -> Unit) {
             }
 
             item {
-                CombinedLabel(
+                DemoSectionLabel(
                     title = "Neon Vibes",
                     description = "Neon green/pink border · White shimmer · 4 s",
                 )
@@ -126,7 +125,7 @@ fun CombinedDemoScreen(onBack: () -> Unit) {
             }
 
             item {
-                CombinedLabel(
+                DemoSectionLabel(
                     title = "Golden Hour",
                     description = "Gold border · Warm shimmer · 8 s slow rotation",
                 )
@@ -163,7 +162,7 @@ fun CombinedDemoScreen(onBack: () -> Unit) {
             }
 
             item {
-                CombinedLabel(
+                DemoSectionLabel(
                     title = "Galaxy",
                     description = "Deep space colors · Star shimmer · 6 s",
                 )
@@ -199,26 +198,6 @@ fun CombinedDemoScreen(onBack: () -> Unit) {
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun CombinedLabel(title: String, description: String) {
-    Column(
-        modifier = Modifier.padding(bottom = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(2.dp),
-    ) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.labelLarge,
-            fontWeight = FontWeight.SemiBold,
-            color = MaterialTheme.colorScheme.primary,
-        )
-        Text(
-            text = description,
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
     }
 }
 

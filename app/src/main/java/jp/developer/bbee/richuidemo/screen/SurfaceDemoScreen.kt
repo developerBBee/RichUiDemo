@@ -1,8 +1,6 @@
 package jp.developer.bbee.richuidemo.screen
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -26,10 +24,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import jp.developer.bbee.richuidemo.component.AnimatedSurfaceCard
+import jp.developer.bbee.richuidemo.component.DemoSectionLabel
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.DurationUnit
 
@@ -62,7 +60,7 @@ fun SurfaceDemoScreen(onBack: () -> Unit) {
             verticalArrangement = Arrangement.spacedBy(24.dp),
         ) {
             item {
-                SurfaceDemoLabel(
+                DemoSectionLabel(
                     title = "Primary — Standard",
                     description = "Default speed · 500 ms sweep · 500 ms pause",
                 )
@@ -75,7 +73,7 @@ fun SurfaceDemoScreen(onBack: () -> Unit) {
             }
 
             item {
-                SurfaceDemoLabel(
+                DemoSectionLabel(
                     title = "Tertiary — Warm Tones",
                     description = "Warm accent color with orange shimmer",
                 )
@@ -94,7 +92,7 @@ fun SurfaceDemoScreen(onBack: () -> Unit) {
             }
 
             item {
-                SurfaceDemoLabel(
+                DemoSectionLabel(
                     title = "Secondary — Rapid Pulse",
                     description = "Fast: 200 ms sweep · 200 ms pause",
                 )
@@ -115,7 +113,7 @@ fun SurfaceDemoScreen(onBack: () -> Unit) {
             }
 
             item {
-                SurfaceDemoLabel(
+                DemoSectionLabel(
                     title = "Error — Long Pause",
                     description = "Slow: 800 ms sweep · 2000 ms pause",
                 )
@@ -136,7 +134,7 @@ fun SurfaceDemoScreen(onBack: () -> Unit) {
             }
 
             item {
-                SurfaceDemoLabel(
+                DemoSectionLabel(
                     title = "Surface — Subtle Dark",
                     description = "Surface background with dark shimmer for depth",
                 )
@@ -155,26 +153,6 @@ fun SurfaceDemoScreen(onBack: () -> Unit) {
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun SurfaceDemoLabel(title: String, description: String) {
-    Column(
-        modifier = Modifier.padding(bottom = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(2.dp),
-    ) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.labelLarge,
-            fontWeight = FontWeight.SemiBold,
-            color = MaterialTheme.colorScheme.primary,
-        )
-        Text(
-            text = description,
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
     }
 }
 

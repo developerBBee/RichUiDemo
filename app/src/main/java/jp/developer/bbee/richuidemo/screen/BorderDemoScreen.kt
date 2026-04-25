@@ -1,8 +1,6 @@
 package jp.developer.bbee.richuidemo.screen
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -15,7 +13,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -25,10 +22,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import jp.developer.bbee.richuidemo.component.AnimatedBorderCard
+import jp.developer.bbee.richuidemo.component.DemoSectionLabel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -59,7 +56,7 @@ fun BorderDemoScreen(onBack: () -> Unit) {
             verticalArrangement = Arrangement.spacedBy(24.dp),
         ) {
             item {
-                DemoLabel(
+                DemoSectionLabel(
                     title = "Two-Color Fast",
                     description = "Magenta ↔ Cyan · 3 seconds · 8 dp border",
                 )
@@ -75,7 +72,7 @@ fun BorderDemoScreen(onBack: () -> Unit) {
             }
 
             item {
-                DemoLabel(
+                DemoSectionLabel(
                     title = "Rainbow Gradient",
                     description = "Full spectrum · 10 seconds · 4 dp border",
                 )
@@ -102,7 +99,7 @@ fun BorderDemoScreen(onBack: () -> Unit) {
             }
 
             item {
-                DemoLabel(
+                DemoSectionLabel(
                     title = "Gold & Silver",
                     description = "Metallic tones · 8 seconds · 12 dp border",
                 )
@@ -126,7 +123,7 @@ fun BorderDemoScreen(onBack: () -> Unit) {
             }
 
             item {
-                DemoLabel(
+                DemoSectionLabel(
                     title = "Neon Pulse",
                     description = "Green → Blue → Pink · 5 seconds · 3 dp border",
                 )
@@ -149,7 +146,7 @@ fun BorderDemoScreen(onBack: () -> Unit) {
             }
 
             item {
-                DemoLabel(
+                DemoSectionLabel(
                     title = "Slow Rotation",
                     description = "Pastel tones · 20 seconds · 6 dp border",
                 )
@@ -172,26 +169,6 @@ fun BorderDemoScreen(onBack: () -> Unit) {
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun DemoLabel(title: String, description: String) {
-    Column(
-        modifier = Modifier.padding(bottom = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(2.dp),
-    ) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.labelLarge,
-            fontWeight = FontWeight.SemiBold,
-            color = MaterialTheme.colorScheme.primary,
-        )
-        Text(
-            text = description,
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
     }
 }
 

@@ -40,7 +40,7 @@ fun AnimatedBorderCard(
     borderWidth: Dp = 2.dp,
     gradient: Brush = Brush.sweepGradient(listOf(Color.Gray, Color.Blue)),
     animationDuration: Int = 10000,
-    onCardClick: () -> Unit = {},
+    onCardClick: (() -> Unit)? = null,
     content: @Composable () -> Unit
 ) {
     val infiniteTransition = rememberInfiniteTransition(label = "infinite Color Animation")
@@ -58,8 +58,7 @@ fun AnimatedBorderCard(
     )
 
     Surface(
-        modifier = modifier
-            .clickable { onCardClick() },
+        modifier = if (onCardClick != null) modifier.clickable { onCardClick() } else modifier,
         shape = shape,
     ) {
         Surface(

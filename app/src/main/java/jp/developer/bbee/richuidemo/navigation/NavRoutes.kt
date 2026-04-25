@@ -14,3 +14,6 @@ data object SurfaceDemoRoute : NavKey
 
 @Serializable
 data object CombinedDemoRoute : NavKey
+
+@Serializable
+data object HorizontalScrollCardsRoute : NavKey

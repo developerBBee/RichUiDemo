@@ -1,11 +1,8 @@
 package jp.developer.bbee.richuidemo.component
 
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -34,8 +31,10 @@ import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -63,28 +62,44 @@ fun MusicPlayerWidget(
     var isPlaying by remember { mutableStateOf(false) }
     var progressFraction by remember { mutableFloatStateOf(0.35f) }
 
-    val infiniteTransition = rememberInfiniteTransition(label = "music")
+    val demoTracks = remember {
+        listOf(
+            Pair(trackTitle, artistName),
+            Pair("Midnight Drive", "Neon Pulse"),
+            Pair("Ocean Breeze", "Wave Riders"),
+        )
+    }
+    var trackIndex by remember { mutableIntStateOf(0) }
+    val (currentTitle, currentArtist) = demoTracks[trackIndex]
 
-    val discRotation by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 360f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(4000, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart,
-        ),
-        label = "disc",
-    )
+    // Disc rotation stops when paused, avoiding continuous recompositions at 60fps
+    val discAngle = remember { Animatable(0f) }
+    LaunchedEffect(isPlaying) {
+        if (isPlaying) {
+            while (true) {
+                val start = discAngle.value % 360f
+                discAngle.snapTo(start)
+                discAngle.animateTo(
+                    start + 360f,
+                    animationSpec = tween(4000, easing = LinearEasing),
+                )
+            }
+        }
+    }
 
-    // Single phase drives all waveform bars via sine offsets — avoids per-bar @Composable calls
-    val wavePhase by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = (2 * PI).toFloat(),
-        animationSpec = infiniteRepeatable(
-            animation = tween(800, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart,
-        ),
-        label = "wave phase",
-    )
+    // Waveform phase stops when paused, avoiding continuous recompositions at 60fps
+    val wavePhase = remember { Animatable(0f) }
+    LaunchedEffect(isPlaying) {
+        if (isPlaying) {
+            while (true) {
+                wavePhase.snapTo(0f)
+                wavePhase.animateTo(
+                    (2 * PI).toFloat(),
+                    animationSpec = tween(800, easing = LinearEasing),
+                )
+            }
+        }
+    }
 
     Card(
         modifier = modifier,
@@ -117,7 +132,7 @@ fun MusicPlayerWidget(
                                 ),
                             ),
                         )
-                        .rotate(discRotation),
+                        .rotate(discAngle.value),
                     contentAlignment = Alignment.Center,
                 ) {
                     Box(
@@ -133,21 +148,20 @@ fun MusicPlayerWidget(
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
                     Text(
-                        text = trackTitle,
+                        text = currentTitle,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
                     Text(
-                        text = artistName,
+                        text = currentArtist,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
             }
 
-            // Waveform: heights derived from sine function keyed on wavePhase
             val barCount = 20
             Row(
                 modifier = Modifier
@@ -158,7 +172,7 @@ fun MusicPlayerWidget(
             ) {
                 repeat(barCount) { i ->
                     val normalized = if (isPlaying) {
-                        (sin(wavePhase + i * PI / barCount * 4f).toFloat() * 0.5f + 0.5f)
+                        (sin(wavePhase.value + i * PI / barCount * 4f).toFloat() * 0.5f + 0.5f)
                     } else {
                         0.15f + (i % 5) * 0.12f
                     }
@@ -209,7 +223,13 @@ fun MusicPlayerWidget(
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                TextButton(onClick = {}) {
+                TextButton(
+                    onClick = {
+                        isPlaying = false
+                        progressFraction = 0f
+                        trackIndex = (trackIndex - 1 + demoTracks.size) % demoTracks.size
+                    },
+                ) {
                     Text("⏮", fontSize = 22.sp, color = MaterialTheme.colorScheme.onSurface)
                 }
                 Spacer(Modifier.width(8.dp))
@@ -226,7 +246,13 @@ fun MusicPlayerWidget(
                     )
                 }
                 Spacer(Modifier.width(8.dp))
-                TextButton(onClick = {}) {
+                TextButton(
+                    onClick = {
+                        isPlaying = false
+                        progressFraction = 0f
+                        trackIndex = (trackIndex + 1) % demoTracks.size
+                    },
+                ) {
                     Text("⏭", fontSize = 22.sp, color = MaterialTheme.colorScheme.onSurface)
                 }
             }

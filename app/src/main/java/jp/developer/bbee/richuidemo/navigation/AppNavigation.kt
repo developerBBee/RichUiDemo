@@ -42,25 +42,7 @@ fun AppNavigation() {
             }
 
             // Horizontal slide: standard Android forward/back navigation feel
-            entry<BorderDemoRoute>(
-                metadata = NavDisplay.transitionSpec {
-                    slideInHorizontally(
-                        initialOffsetX = { it },
-                        animationSpec = tween(350, easing = FastOutSlowInEasing),
-                    ) togetherWith slideOutHorizontally(
-                        targetOffsetX = { -it / 3 },
-                        animationSpec = tween(350, easing = FastOutLinearInEasing),
-                    )
-                } + NavDisplay.popTransitionSpec {
-                    slideInHorizontally(
-                        initialOffsetX = { -it / 3 },
-                        animationSpec = tween(350, easing = FastOutSlowInEasing),
-                    ) togetherWith slideOutHorizontally(
-                        targetOffsetX = { it },
-                        animationSpec = tween(350, easing = FastOutLinearInEasing),
-                    )
-                },
-            ) {
+            entry<BorderDemoRoute>(metadata = horizontalSlideMetadata()) {
                 BorderDemoScreen(onBack = { backStack.removeLastOrNull() })
             }
 
@@ -108,51 +90,32 @@ fun AppNavigation() {
                 CombinedDemoScreen(onBack = { backStack.removeLastOrNull() })
             }
 
-            // Horizontal slide: widget samples
-            entry<WidgetSamplesRoute>(
-                metadata = NavDisplay.transitionSpec {
-                    slideInHorizontally(
-                        initialOffsetX = { it },
-                        animationSpec = tween(350, easing = FastOutSlowInEasing),
-                    ) togetherWith slideOutHorizontally(
-                        targetOffsetX = { -it / 3 },
-                        animationSpec = tween(350, easing = FastOutLinearInEasing),
-                    )
-                } + NavDisplay.popTransitionSpec {
-                    slideInHorizontally(
-                        initialOffsetX = { -it / 3 },
-                        animationSpec = tween(350, easing = FastOutSlowInEasing),
-                    ) togetherWith slideOutHorizontally(
-                        targetOffsetX = { it },
-                        animationSpec = tween(350, easing = FastOutLinearInEasing),
-                    )
-                },
-            ) {
+            entry<WidgetSamplesRoute>(metadata = horizontalSlideMetadata()) {
                 WidgetSamplesScreen(onBack = { backStack.removeLastOrNull() })
             }
 
-            // Horizontal slide: same as BorderDemo — standard Android forward/back feel
-            entry<HorizontalScrollCardsRoute>(
-                metadata = NavDisplay.transitionSpec {
-                    slideInHorizontally(
-                        initialOffsetX = { it },
-                        animationSpec = tween(350, easing = FastOutSlowInEasing),
-                    ) togetherWith slideOutHorizontally(
-                        targetOffsetX = { -it / 3 },
-                        animationSpec = tween(350, easing = FastOutLinearInEasing),
-                    )
-                } + NavDisplay.popTransitionSpec {
-                    slideInHorizontally(
-                        initialOffsetX = { -it / 3 },
-                        animationSpec = tween(350, easing = FastOutSlowInEasing),
-                    ) togetherWith slideOutHorizontally(
-                        targetOffsetX = { it },
-                        animationSpec = tween(350, easing = FastOutLinearInEasing),
-                    )
-                },
-            ) {
+            entry<HorizontalScrollCardsRoute>(metadata = horizontalSlideMetadata()) {
                 HorizontalScrollCardsScreen(onBack = { backStack.removeLastOrNull() })
             }
         },
     )
 }
+
+private fun horizontalSlideMetadata() =
+    NavDisplay.transitionSpec {
+        slideInHorizontally(
+            initialOffsetX = { it },
+            animationSpec = tween(350, easing = FastOutSlowInEasing),
+        ) togetherWith slideOutHorizontally(
+            targetOffsetX = { -it / 3 },
+            animationSpec = tween(350, easing = FastOutLinearInEasing),
+        )
+    } + NavDisplay.popTransitionSpec {
+        slideInHorizontally(
+            initialOffsetX = { -it / 3 },
+            animationSpec = tween(350, easing = FastOutSlowInEasing),
+        ) togetherWith slideOutHorizontally(
+            targetOffsetX = { it },
+            animationSpec = tween(350, easing = FastOutLinearInEasing),
+        )
+    }

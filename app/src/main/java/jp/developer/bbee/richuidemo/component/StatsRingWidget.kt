@@ -86,6 +86,7 @@ fun StatsRingWidget(
 
 @Composable
 private fun StatRing(label: String, progress: Float, color: Color) {
+    val clamped = progress.coerceIn(0f, 1f)
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -103,13 +104,13 @@ private fun StatRing(label: String, progress: Float, color: Color) {
                 drawArc(
                     color = color,
                     startAngle = -90f,
-                    sweepAngle = 360f * progress,
+                    sweepAngle = 360f * clamped,
                     useCenter = false,
                     style = stroke,
                 )
             }
             Text(
-                text = "${(progress * 100).toInt()}%",
+                text = "${(clamped * 100).toInt()}%",
                 style = MaterialTheme.typography.labelLarge,
                 fontWeight = FontWeight.Bold,
                 color = color,

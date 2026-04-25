@@ -1,12 +1,9 @@
 package jp.developer.bbee.richuidemo.component
 
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
@@ -49,6 +46,12 @@ fun CountdownTimerWidget(
     var remainingSeconds by remember { mutableIntStateOf(totalSeconds) }
     var isRunning by remember { mutableStateOf(false) }
 
+    // Sync state when totalSeconds changes from outside
+    LaunchedEffect(totalSeconds) {
+        remainingSeconds = totalSeconds
+        isRunning = false
+    }
+
     // Cancels and restarts whenever isRunning changes — naturally pauses when false
     LaunchedEffect(isRunning) {
         if (isRunning) {
@@ -77,17 +80,19 @@ fun CountdownTimerWidget(
         label = "timer color",
     )
 
-    val infiniteTransition = rememberInfiniteTransition(label = "pulse")
-    val pulseScale by infiniteTransition.animateFloat(
-        initialValue = 1f,
-        targetValue = 1.05f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(500, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse,
-        ),
-        label = "pulse",
-    )
-    val effectiveScale = if (progress < 0.2f && isRunning && remainingSeconds > 0) pulseScale else 1f
+    // Pulse only runs when the condition is met; Animatable stops when LaunchedEffect cancels
+    val pulseScale = remember { Animatable(1f) }
+    val shouldPulse = isRunning && progress < 0.2f && remainingSeconds > 0
+    LaunchedEffect(shouldPulse) {
+        if (shouldPulse) {
+            while (true) {
+                pulseScale.animateTo(1.05f, tween(500, easing = FastOutSlowInEasing))
+                pulseScale.animateTo(1f, tween(500, easing = FastOutSlowInEasing))
+            }
+        } else {
+            pulseScale.animateTo(1f, tween(200))
+        }
+    }
 
     Card(
         modifier = modifier,
@@ -113,7 +118,7 @@ fun CountdownTimerWidget(
 
             Box(
                 contentAlignment = Alignment.Center,
-                modifier = Modifier.scale(effectiveScale),
+                modifier = Modifier.scale(pulseScale.value),
             ) {
                 Canvas(modifier = Modifier.size(140.dp)) {
                     val stroke = Stroke(width = 14.dp.toPx(), cap = StrokeCap.Round)

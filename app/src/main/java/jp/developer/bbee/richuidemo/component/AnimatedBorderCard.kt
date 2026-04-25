@@ -6,7 +6,6 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -40,7 +39,7 @@ fun AnimatedBorderCard(
     borderWidth: Dp = 2.dp,
     gradient: Brush = Brush.sweepGradient(listOf(Color.Gray, Color.Blue)),
     animationDuration: Int = 10000,
-    onCardClick: () -> Unit = {},
+    onCardClick: (() -> Unit)? = null,
     content: @Composable () -> Unit
 ) {
     val infiniteTransition = rememberInfiniteTransition(label = "infinite Color Animation")
@@ -57,11 +56,7 @@ fun AnimatedBorderCard(
         label = "Infinite Colors",
     )
 
-    Surface(
-        modifier = modifier
-            .clickable { onCardClick() },
-        shape = shape,
-    ) {
+    val borderContent: @Composable () -> Unit = {
         Surface(
             modifier = Modifier
                 .padding(all = borderWidth)
@@ -80,6 +75,14 @@ fun AnimatedBorderCard(
         ) {
             content()
         }
+    }
+
+    // Use Surface(onClick) overload so the ripple indication is correctly
+    // clipped to the card's shape boundary.
+    if (onCardClick != null) {
+        Surface(modifier = modifier, shape = shape, onClick = onCardClick) { borderContent() }
+    } else {
+        Surface(modifier = modifier, shape = shape) { borderContent() }
     }
 }
 

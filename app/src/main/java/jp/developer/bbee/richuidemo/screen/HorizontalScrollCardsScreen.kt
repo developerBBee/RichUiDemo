@@ -64,6 +64,7 @@ private data class TrendingCard(
     val emoji: String,
     val title: String,
     val label: String,
+    val category: String,
     val backgroundColor: Color,
     val effectColor: Color,
 )
@@ -111,13 +112,16 @@ private val heroCards = listOf(
     ),
 )
 
+// Each card carries its category so the chip row can filter this list.
 private val trendingCards = listOf(
-    TrendingCard("🎵", "Music", "Audio", Color(0xFF7E57C2), Color(0xFFB39DDB)),
-    TrendingCard("📸", "Photography", "Visual", Color(0xFF26A69A), Color(0xFF80CBC4)),
-    TrendingCard("🏋️", "Fitness", "Health", Color(0xFF42A5F5), Color(0xFF90CAF9)),
-    TrendingCard("📚", "Reading", "Knowledge", Color(0xFFEF5350), Color(0xFFEF9A9A)),
-    TrendingCard("🎮", "Gaming", "Fun", Color(0xFF5C6BC0), Color(0xFF9FA8DA)),
-    TrendingCard("🌏", "World", "Global", Color(0xFF26C6DA), Color(0xFF80DEEA)),
+    TrendingCard("🎨", "Illustration", "Creative", "Design", Color(0xFFAB47BC), Color(0xFFCE93D8)),
+    TrendingCard("🎮", "Gaming", "Fun", "Tech", Color(0xFF5C6BC0), Color(0xFF9FA8DA)),
+    TrendingCard("🌿", "Botany", "Green", "Nature", Color(0xFF66BB6A), Color(0xFF81C784)),
+    TrendingCard("🍕", "Cuisine", "Taste", "Food", Color(0xFFFF7043), Color(0xFFFF8A65)),
+    TrendingCard("✈️", "Journey", "Explore", "Travel", Color(0xFF26C6DA), Color(0xFF80DEEA)),
+    TrendingCard("🎵", "Music", "Audio", "Music", Color(0xFF7E57C2), Color(0xFFB39DDB)),
+    TrendingCard("📸", "Photography", "Visual", "Art", Color(0xFF26A69A), Color(0xFF80CBC4)),
+    TrendingCard("🏋️", "Fitness", "Health", "Sport", Color(0xFF42A5F5), Color(0xFF90CAF9)),
 )
 
 private val categories = listOf(
@@ -129,6 +133,10 @@ private val categories = listOf(
 fun HorizontalScrollCardsScreen(onBack: () -> Unit) {
     val pagerState = rememberPagerState { heroCards.size }
     var selectedCategory by remember { mutableStateOf("All") }
+    val filteredTrending = remember(selectedCategory) {
+        if (selectedCategory == "All") trendingCards
+        else trendingCards.filter { it.category == selectedCategory }
+    }
 
     Scaffold(
         topBar = {
@@ -183,7 +191,7 @@ fun HorizontalScrollCardsScreen(onBack: () -> Unit) {
                 Column(modifier = Modifier.padding(horizontal = 16.dp)) {
                     DemoSectionLabel(
                         title = "Categories",
-                        description = "Tap to filter by topic",
+                        description = "Filters the Trending cards below",
                     )
                 }
                 Spacer(modifier = Modifier.height(4.dp))
@@ -209,12 +217,28 @@ fun HorizontalScrollCardsScreen(onBack: () -> Unit) {
                     )
                 }
                 Spacer(modifier = Modifier.height(4.dp))
-                LazyRow(
-                    contentPadding = PaddingValues(horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    items(trendingCards) { card ->
-                        TrendingCardItem(card = card)
+                if (filteredTrending.isEmpty()) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(140.dp)
+                            .padding(horizontal = 16.dp),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(
+                            text = "No cards for this category",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                } else {
+                    LazyRow(
+                        contentPadding = PaddingValues(horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        items(filteredTrending) { card ->
+                            TrendingCardItem(card = card)
+                        }
                     }
                 }
             }
@@ -224,6 +248,11 @@ fun HorizontalScrollCardsScreen(onBack: () -> Unit) {
 
 @Composable
 private fun HeroCardItem(card: HeroCard) {
+    // Pre-compute alpha-adjusted background colors once per card reference.
+    val backgroundColors = remember(card) {
+        card.gradientColors.map { it.copy(alpha = 0.25f) }
+    }
+
     AnimatedBorderCard(
         modifier = Modifier
             .fillMaxWidth()
@@ -236,18 +265,15 @@ private fun HeroCardItem(card: HeroCard) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(
-                    brush = Brush.linearGradient(
-                        colors = card.gradientColors.map { it.copy(alpha = 0.25f) },
-                    ),
-                ),
+                .background(brush = Brush.linearGradient(colors = backgroundColors)),
         ) {
+            // Dark scrim ensures the white tag label is readable on any gradient color.
             Surface(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
                     .padding(14.dp),
                 shape = RoundedCornerShape(50.dp),
-                color = card.gradientColors.first().copy(alpha = 0.85f),
+                color = Color.Black.copy(alpha = 0.45f),
             ) {
                 Text(
                     text = card.tag,

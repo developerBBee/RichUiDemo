@@ -194,9 +194,8 @@ fun HomeScreen(
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { onNavigateToHorizontalScrollCards() },
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = onNavigateToHorizontalScrollCards,
                     shape = RoundedCornerShape(16.dp),
                     colors = CardDefaults.cardColors(
                         containerColor = MaterialTheme.colorScheme.secondaryContainer,

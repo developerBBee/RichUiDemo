@@ -12,6 +12,7 @@ navigation3 = "1.0.0"
 kotlinxSerializationJson = "1.8.1"
 androidLint = "32.1.1"
 corePip = "1.0.0-alpha02"
+glance = "1.1.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -35,6 +36,8 @@ kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-
 android-lint-api = { group = "com.android.tools.lint", name = "lint-api", version.ref = "androidLint" }
 android-lint-checks = { group = "com.android.tools.lint", name = "lint-checks", version.ref = "androidLint" }
 androidx-core-pip = { group = "androidx.core", name = "core-pip", version.ref = "corePip" }
+androidx-glance-appwidget = { group = "androidx.glance", name = "glance-appwidget", version.ref = "glance" }
+androidx-glance-material3 = { group = "androidx.glance", name = "glance-material3", version.ref = "glance" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

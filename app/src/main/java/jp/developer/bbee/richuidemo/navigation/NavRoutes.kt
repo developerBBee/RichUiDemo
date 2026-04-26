@@ -17,3 +17,6 @@ data object CombinedDemoRoute : NavKey
 
 @Serializable
 data object HorizontalScrollCardsRoute : NavKey
+
+@Serializable
+data object WidgetSamplesRoute : NavKey

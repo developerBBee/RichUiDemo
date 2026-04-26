@@ -43,12 +43,13 @@ fun CountdownTimerWidget(
     modifier: Modifier = Modifier,
     totalSeconds: Int = 60,
 ) {
-    var remainingSeconds by remember { mutableIntStateOf(totalSeconds) }
+    val safeTotalSeconds = totalSeconds.coerceAtLeast(1)
+    var remainingSeconds by remember { mutableIntStateOf(safeTotalSeconds) }
     var isRunning by remember { mutableStateOf(false) }
 
     // Sync state when totalSeconds changes from outside
-    LaunchedEffect(totalSeconds) {
-        remainingSeconds = totalSeconds
+    LaunchedEffect(safeTotalSeconds) {
+        remainingSeconds = safeTotalSeconds
         isRunning = false
     }
 
@@ -63,7 +64,7 @@ fun CountdownTimerWidget(
         }
     }
 
-    val progress = if (totalSeconds > 0) remainingSeconds.toFloat() / totalSeconds else 0f
+    val progress = remainingSeconds.toFloat() / safeTotalSeconds
 
     val animatedProgress by animateFloatAsState(
         targetValue = progress,
@@ -171,7 +172,7 @@ fun CountdownTimerWidget(
                 OutlinedButton(
                     onClick = {
                         isRunning = false
-                        remainingSeconds = totalSeconds
+                        remainingSeconds = safeTotalSeconds
                     },
                     modifier = Modifier.weight(1f),
                 ) {

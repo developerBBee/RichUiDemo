@@ -64,7 +64,7 @@ fun MusicPlayerWidget(
     var isPlaying by remember { mutableStateOf(false) }
     var progressFraction by remember { mutableFloatStateOf(0.35f) }
 
-    val demoTracks = remember {
+    val demoTracks = remember(trackTitle, artistName) {
         listOf(
             Pair(trackTitle, artistName),
             Pair("Midnight Drive", "Neon Pulse"),
@@ -103,6 +103,20 @@ fun MusicPlayerWidget(
         }
     }
 
+    val discBrush = remember(accentColor) {
+        Brush.sweepGradient(
+            listOf(
+                accentColor,
+                Color(0xFFFF6B6B),
+                Color(0xFF4ECDC4),
+                accentColor,
+            ),
+        )
+    }
+    val barBrush = remember(accentColor) {
+        Brush.verticalGradient(listOf(accentColor, accentColor.copy(alpha = 0.35f)))
+    }
+
     Card(
         modifier = modifier,
         shape = RoundedCornerShape(24.dp),
@@ -124,16 +138,7 @@ fun MusicPlayerWidget(
                     modifier = Modifier
                         .size(72.dp)
                         .clip(CircleShape)
-                        .background(
-                            Brush.sweepGradient(
-                                listOf(
-                                    accentColor,
-                                    Color(0xFFFF6B6B),
-                                    Color(0xFF4ECDC4),
-                                    accentColor,
-                                ),
-                            ),
-                        )
+                        .background(discBrush)
                         .rotate(discAngle.value),
                     contentAlignment = Alignment.Center,
                 ) {
@@ -183,11 +188,7 @@ fun MusicPlayerWidget(
                             .weight(1f)
                             .height((4 + normalized * 28).dp)
                             .clip(RoundedCornerShape(2.dp))
-                            .background(
-                                Brush.verticalGradient(
-                                    listOf(accentColor, accentColor.copy(alpha = 0.35f)),
-                                ),
-                            ),
+                            .background(barBrush),
                     )
                 }
             }

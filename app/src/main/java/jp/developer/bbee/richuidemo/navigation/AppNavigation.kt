@@ -42,7 +42,7 @@ fun AppNavigation() {
             }
 
             // Horizontal slide: standard Android forward/back navigation feel
-            entry<BorderDemoRoute>(metadata = horizontalSlideMetadata()) {
+            entry<BorderDemoRoute>(metadata = horizontalSlideMetadata) {
                 BorderDemoScreen(onBack = { backStack.removeLastOrNull() })
             }
 
@@ -90,18 +90,18 @@ fun AppNavigation() {
                 CombinedDemoScreen(onBack = { backStack.removeLastOrNull() })
             }
 
-            entry<WidgetSamplesRoute>(metadata = horizontalSlideMetadata()) {
+            entry<WidgetSamplesRoute>(metadata = horizontalSlideMetadata) {
                 WidgetSamplesScreen(onBack = { backStack.removeLastOrNull() })
             }
 
-            entry<HorizontalScrollCardsRoute>(metadata = horizontalSlideMetadata()) {
+            entry<HorizontalScrollCardsRoute>(metadata = horizontalSlideMetadata) {
                 HorizontalScrollCardsScreen(onBack = { backStack.removeLastOrNull() })
             }
         },
     )
 }
 
-private fun horizontalSlideMetadata() =
+private val horizontalSlideMetadata =
     NavDisplay.transitionSpec {
         slideInHorizontally(
             initialOffsetX = { it },

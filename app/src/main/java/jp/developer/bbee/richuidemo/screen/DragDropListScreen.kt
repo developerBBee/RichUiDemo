@@ -152,7 +152,7 @@ fun DragDropListScreen(onBack: () -> Unit) {
                         detectDragGesturesAfterLongPress(
                             onDragStart = { offset ->
                                 val item = lazyListState.layoutInfo.visibleItemsInfo.find { info ->
-                                    offset.y.toInt() in info.offset..(info.offset + info.size)
+                                    offset.y.toInt() in info.offset until (info.offset + info.size)
                                 }
                                 if (item != null) {
                                     draggedIndex = item.index
@@ -173,24 +173,41 @@ fun DragDropListScreen(onBack: () -> Unit) {
                                     currentItem.offset + currentItem.size / 2 + dragOffsetY.toInt()
 
                                 val targetItem = lazyListState.layoutInfo.visibleItemsInfo.find { info ->
-                                    visualCenter in info.offset..(info.offset + info.size) &&
+                                    visualCenter in info.offset until (info.offset + info.size) &&
                                         info.index != current
                                 }
 
                                 if (targetItem != null) {
                                     val toIdx = targetItem.index
-                                    // Step one position at a time so haptics fire per adjacent swap
+                                    val draggedSize = currentItem.size
+                                    // Step one position at a time so haptics fire per adjacent swap.
+                                    // Accumulate the real layout-offset delta per step so the
+                                    // correction is accurate even when item heights vary (e.g.
+                                    // large font scale causes text to wrap).
                                     val step = if (toIdx > current) 1 else -1
                                     var idx = current
+                                    var draggedLayoutOffset = currentItem.offset
+                                    var offsetAdjustment = 0
                                     while (idx != toIdx) {
                                         val next = idx + step
+                                        val crossedInfo = lazyListState.layoutInfo.visibleItemsInfo
+                                            .find { it.index == next }
+                                        if (crossedInfo != null) {
+                                            val gap = if (step > 0) {
+                                                crossedInfo.offset - draggedLayoutOffset - draggedSize
+                                            } else {
+                                                draggedLayoutOffset - crossedInfo.offset - crossedInfo.size
+                                            }
+                                            val delta = (crossedInfo.size + gap) * step
+                                            offsetAdjustment += delta
+                                            draggedLayoutOffset += delta
+                                        }
                                         items.add(next, items.removeAt(idx))
                                         idx = next
                                         hapticFeedback.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                                     }
                                     draggedIndex = toIdx
-                                    // Adjust offset so item stays visually under the finger
-                                    dragOffsetY -= (targetItem.offset - currentItem.offset).toFloat()
+                                    dragOffsetY -= offsetAdjustment.toFloat()
                                 }
                             },
                             onDragEnd = {

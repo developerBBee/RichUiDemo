@@ -161,13 +161,14 @@ fun DragDropListScreen(onBack: () -> Unit) {
                                 }
                             },
                             onDrag = { change, dragAmount ->
-                                change.consume()
-                                dragOffsetY += dragAmount.y
-
                                 val current = draggedIndex ?: return@detectDragGesturesAfterLongPress
                                 val currentItem = lazyListState.layoutInfo.visibleItemsInfo
                                     .find { it.index == current }
                                     ?: return@detectDragGesturesAfterLongPress
+
+                                change.consume()
+                                dragOffsetY += dragAmount.y
+
                                 val visualCenter =
                                     currentItem.offset + currentItem.size / 2 + dragOffsetY.toInt()
 

@@ -178,11 +178,18 @@ fun DragDropListScreen(onBack: () -> Unit) {
 
                                 if (targetItem != null) {
                                     val toIdx = targetItem.index
-                                    items.add(toIdx, items.removeAt(current))
+                                    // Step one position at a time so haptics fire per adjacent swap
+                                    val step = if (toIdx > current) 1 else -1
+                                    var idx = current
+                                    while (idx != toIdx) {
+                                        val next = idx + step
+                                        items.add(next, items.removeAt(idx))
+                                        idx = next
+                                        hapticFeedback.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                    }
                                     draggedIndex = toIdx
                                     // Adjust offset so item stays visually under the finger
                                     dragOffsetY -= (targetItem.offset - currentItem.offset).toFloat()
-                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                                 }
                             },
                             onDragEnd = {

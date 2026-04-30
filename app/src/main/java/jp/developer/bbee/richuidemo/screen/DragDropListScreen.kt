@@ -221,7 +221,7 @@ fun DragDropListScreen(onBack: () -> Unit) {
                                 scaleX = scale
                                 scaleY = scale
                                 this.alpha = alpha
-                                shadowElevation = if (isDragged) 24f else 0f
+                                shadowElevation = if (isDragged) 24.dp.toPx() else 0f
                             },
                         shape = RoundedCornerShape(16.dp),
                         colors = CardDefaults.cardColors(

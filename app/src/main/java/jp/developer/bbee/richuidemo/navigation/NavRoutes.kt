@@ -23,3 +23,6 @@ data object WidgetSamplesRoute : NavKey
 
 @Serializable
 data object DragDropListRoute : NavKey
+
+@Serializable
+data object BubbleMenuRoute : NavKey

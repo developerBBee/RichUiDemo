@@ -31,11 +31,13 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import androidx.compose.material3.contentColorFor
 
 data class BubbleMenuItem(
     val icon: ImageVector,
     val label: String,
     val containerColor: Color = Color.Unspecified,
+    val contentColor: Color = Color.Unspecified,
     val onClick: () -> Unit,
 )
 
@@ -48,6 +50,8 @@ fun BubbleMenuButton(
     mainIcon: ImageVector = Icons.Default.Add,
     containerColor: Color = MaterialTheme.colorScheme.primary,
     contentColor: Color = MaterialTheme.colorScheme.onPrimary,
+    collapsedContentDescription: String = "メニューを開く",
+    expandedContentDescription: String = "メニューを閉じる",
 ) {
     val rotation by animateFloatAsState(
         targetValue = if (expanded) 45f else 0f,
@@ -93,7 +97,7 @@ fun BubbleMenuButton(
         ) {
             Icon(
                 imageVector = mainIcon,
-                contentDescription = if (expanded) "メニューを閉じる" else "メニューを開く",
+                contentDescription = if (expanded) expandedContentDescription else collapsedContentDescription,
                 modifier = Modifier.rotate(rotation),
             )
         }
@@ -105,15 +109,9 @@ private fun BubbleMenuItemRow(
     item: BubbleMenuItem,
     onDismiss: () -> Unit,
 ) {
-    val fabColor = if (item.containerColor != Color.Unspecified) {
-        item.containerColor
-    } else {
-        MaterialTheme.colorScheme.secondaryContainer
-    }
-    val fabContentColor = if (item.containerColor != Color.Unspecified) {
-        MaterialTheme.colorScheme.onSecondary
-    } else {
-        MaterialTheme.colorScheme.onSecondaryContainer
+    val fabColor = item.containerColor.takeOrElse { MaterialTheme.colorScheme.secondaryContainer }
+    val fabContentColor = item.contentColor.takeOrElse {
+        contentColorFor(fabColor).takeOrElse { MaterialTheme.colorScheme.onSecondaryContainer }
     }
 
     Row(

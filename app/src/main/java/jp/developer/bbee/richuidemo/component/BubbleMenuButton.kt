@@ -31,6 +31,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
@@ -74,25 +76,28 @@ fun BubbleMenuButton(
         horizontalAlignment = Alignment.End,
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        items.asReversed().forEach { item ->
-            AnimatedVisibility(
-                visible = expanded,
-                enter = slideInVertically(
-                    initialOffsetY = { it },
-                    animationSpec = spring(
-                        dampingRatio = Spring.DampingRatioMediumBouncy,
-                        stiffness = Spring.StiffnessMediumLow,
-                    ),
-                ) + fadeIn(animationSpec = tween(220)),
-                exit = slideOutVertically(
-                    targetOffsetY = { it },
-                    animationSpec = spring(stiffness = Spring.StiffnessHigh),
-                ) + fadeOut(animationSpec = tween(120)),
-            ) {
-                BubbleMenuItemRow(
-                    item = item,
-                    onDismiss = { onExpandedChange(false) },
-                )
+        val reversedItems = remember(items) { items.asReversed() }
+        reversedItems.forEach { item ->
+            key(item.label) {
+                AnimatedVisibility(
+                    visible = expanded,
+                    enter = slideInVertically(
+                        initialOffsetY = { it },
+                        animationSpec = spring(
+                            dampingRatio = Spring.DampingRatioMediumBouncy,
+                            stiffness = Spring.StiffnessMediumLow,
+                        ),
+                    ) + fadeIn(animationSpec = tween(220)),
+                    exit = slideOutVertically(
+                        targetOffsetY = { it },
+                        animationSpec = spring(stiffness = Spring.StiffnessHigh),
+                    ) + fadeOut(animationSpec = tween(120)),
+                ) {
+                    BubbleMenuItemRow(
+                        item = item,
+                        onDismiss = { onExpandedChange(false) },
+                    )
+                }
             }
         }
 
@@ -156,21 +161,20 @@ private fun BubbleMenuItemRow(
     }
 }
 
-private val previewItems = listOf(
-    BubbleMenuItem(icon = Icons.Default.Share, label = "シェア", onClick = {}),
-    BubbleMenuItem(icon = Icons.Default.Edit, label = "編集", onClick = {}),
-    BubbleMenuItem(
-        icon = Icons.Default.Delete,
-        label = "削除",
-        containerColor = Color(0xFFBA1A1A),
-        onClick = {},
-    ),
-)
-
 @Preview(showBackground = true, name = "Collapsed")
 @Composable
 private fun BubbleMenuButtonCollapsedPreview() {
     RichUiDemoTheme {
+        val previewItems = listOf(
+            BubbleMenuItem(icon = Icons.Default.Share, label = "シェア", onClick = {}),
+            BubbleMenuItem(icon = Icons.Default.Edit, label = "編集", onClick = {}),
+            BubbleMenuItem(
+                icon = Icons.Default.Delete,
+                label = "削除",
+                containerColor = MaterialTheme.colorScheme.error,
+                onClick = {},
+            ),
+        )
         Box(modifier = Modifier.size(120.dp), contentAlignment = Alignment.BottomEnd) {
             BubbleMenuButton(
                 items = previewItems,
@@ -188,6 +192,16 @@ private fun BubbleMenuButtonCollapsedPreview() {
 @Composable
 private fun BubbleMenuButtonExpandedPreview() {
     RichUiDemoTheme {
+        val previewItems = listOf(
+            BubbleMenuItem(icon = Icons.Default.Share, label = "シェア", onClick = {}),
+            BubbleMenuItem(icon = Icons.Default.Edit, label = "編集", onClick = {}),
+            BubbleMenuItem(
+                icon = Icons.Default.Delete,
+                label = "削除",
+                containerColor = MaterialTheme.colorScheme.error,
+                onClick = {},
+            ),
+        )
         Box(modifier = Modifier.size(300.dp), contentAlignment = Alignment.BottomEnd) {
             BubbleMenuButton(
                 items = previewItems,

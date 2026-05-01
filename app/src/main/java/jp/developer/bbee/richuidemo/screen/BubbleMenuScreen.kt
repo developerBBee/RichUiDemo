@@ -47,19 +47,25 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import jp.developer.bbee.richuidemo.component.BackNavigationIcon
 import jp.developer.bbee.richuidemo.component.BubbleMenuButton
 import jp.developer.bbee.richuidemo.component.BubbleMenuItem
+import jp.developer.bbee.richuidemo.ui.theme.RichUiDemoTheme
 import kotlinx.coroutines.launch
 
+private val FabBottomOffset = 76.dp // FAB height (56dp) + FAB padding from edge (20dp)
+
+private data class AppListEntry(val title: String, val category: String, val color: Color)
+
 private val sampleItems = listOf(
-    Triple("写真編集アプリ", "ポートフォリオ", Color(0xFF6650A4)),
-    Triple("音楽プレイヤー", "メディア", Color(0xFF0061A4)),
-    Triple("タスク管理", "生産性", Color(0xFF006E1C)),
-    Triple("天気予報", "ツール", Color(0xFF984061)),
-    Triple("料理レシピ", "ライフスタイル", Color(0xFF6B5C00)),
-    Triple("フィットネス", "健康", Color(0xFF00696E)),
+    AppListEntry("写真編集アプリ", "ポートフォリオ", Color(0xFF6650A4)),
+    AppListEntry("音楽プレイヤー", "メディア", Color(0xFF0061A4)),
+    AppListEntry("タスク管理", "生産性", Color(0xFF006E1C)),
+    AppListEntry("天気予報", "ツール", Color(0xFF984061)),
+    AppListEntry("料理レシピ", "ライフスタイル", Color(0xFF6B5C00)),
+    AppListEntry("フィットネス", "健康", Color(0xFF00696E)),
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -68,14 +74,15 @@ fun BubbleMenuScreen(onBack: () -> Unit) {
     var menuExpanded by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+    val favoriteContainerColor = MaterialTheme.colorScheme.tertiaryContainer
     val errorColor = MaterialTheme.colorScheme.error
 
-    val bubbleItems = remember(scope, snackbarHostState, errorColor) {
+    val bubbleItems = remember(scope, snackbarHostState, favoriteContainerColor, errorColor) {
         listOf(
             BubbleMenuItem(
                 icon = Icons.Default.Favorite,
                 label = "お気に入り",
-                containerColor = Color(0xFFFFB4AB),
+                containerColor = favoriteContainerColor,
                 onClick = {
                     scope.launch { snackbarHostState.showSnackbar("お気に入りに追加しました") }
                 },
@@ -116,7 +123,7 @@ fun BubbleMenuScreen(onBack: () -> Unit) {
             SnackbarHost(snackbarHostState) { data ->
                 Snackbar(
                     snackbarData = data,
-                    modifier = Modifier.padding(bottom = 80.dp),
+                    modifier = Modifier.padding(bottom = FabBottomOffset),
                 )
             }
         },
@@ -138,8 +145,8 @@ fun BubbleMenuScreen(onBack: () -> Unit) {
                         modifier = Modifier.padding(bottom = 4.dp),
                     )
                 }
-                items(sampleItems) { (title, category, color) ->
-                    AppListItem(title = title, category = category, color = color)
+                items(sampleItems) { entry ->
+                    AppListItem(entry = entry)
                 }
             }
 
@@ -176,7 +183,7 @@ fun BubbleMenuScreen(onBack: () -> Unit) {
 }
 
 @Composable
-private fun AppListItem(title: String, category: String, color: Color) {
+private fun AppListItem(entry: AppListEntry) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
@@ -194,30 +201,38 @@ private fun AppListItem(title: String, category: String, color: Color) {
         ) {
             Surface(
                 shape = CircleShape,
-                color = color.copy(alpha = 0.18f),
+                color = entry.color.copy(alpha = 0.18f),
                 modifier = Modifier.size(44.dp),
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     Icon(
                         imageVector = Icons.Default.Favorite,
                         contentDescription = null,
-                        tint = color,
+                        tint = entry.color,
                         modifier = Modifier.size(22.dp),
                     )
                 }
             }
             Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text(
-                    text = title,
+                    text = entry.title,
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.SemiBold,
                 )
                 Text(
-                    text = category,
+                    text = entry.category,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun BubbleMenuScreenPreview() {
+    RichUiDemoTheme {
+        BubbleMenuScreen(onBack = {})
     }
 }

@@ -68,39 +68,42 @@ fun BubbleMenuScreen(onBack: () -> Unit) {
     var menuExpanded by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+    val errorColor = MaterialTheme.colorScheme.error
 
-    val bubbleItems = listOf(
-        BubbleMenuItem(
-            icon = Icons.Default.Favorite,
-            label = "お気に入り",
-            containerColor = Color(0xFFFFB4AB),
-            onClick = {
-                scope.launch { snackbarHostState.showSnackbar("お気に入りに追加しました") }
-            },
-        ),
-        BubbleMenuItem(
-            icon = Icons.Default.Share,
-            label = "シェア",
-            onClick = {
-                scope.launch { snackbarHostState.showSnackbar("シェアしました") }
-            },
-        ),
-        BubbleMenuItem(
-            icon = Icons.Default.Edit,
-            label = "編集",
-            onClick = {
-                scope.launch { snackbarHostState.showSnackbar("編集モードを開始します") }
-            },
-        ),
-        BubbleMenuItem(
-            icon = Icons.Default.Delete,
-            label = "削除",
-            containerColor = MaterialTheme.colorScheme.error,
-            onClick = {
-                scope.launch { snackbarHostState.showSnackbar("削除しました") }
-            },
-        ),
-    )
+    val bubbleItems = remember(scope, snackbarHostState, errorColor) {
+        listOf(
+            BubbleMenuItem(
+                icon = Icons.Default.Favorite,
+                label = "お気に入り",
+                containerColor = Color(0xFFFFB4AB),
+                onClick = {
+                    scope.launch { snackbarHostState.showSnackbar("お気に入りに追加しました") }
+                },
+            ),
+            BubbleMenuItem(
+                icon = Icons.Default.Share,
+                label = "シェア",
+                onClick = {
+                    scope.launch { snackbarHostState.showSnackbar("シェアしました") }
+                },
+            ),
+            BubbleMenuItem(
+                icon = Icons.Default.Edit,
+                label = "編集",
+                onClick = {
+                    scope.launch { snackbarHostState.showSnackbar("編集モードを開始します") }
+                },
+            ),
+            BubbleMenuItem(
+                icon = Icons.Default.Delete,
+                label = "削除",
+                containerColor = errorColor,
+                onClick = {
+                    scope.launch { snackbarHostState.showSnackbar("削除しました") }
+                },
+            ),
+        )
+    }
 
     Scaffold(
         topBar = {
@@ -160,11 +163,13 @@ fun BubbleMenuScreen(onBack: () -> Unit) {
 
             BubbleMenuButton(
                 items = bubbleItems,
-                expanded = menuExpanded,
-                onExpandedChange = { menuExpanded = it },
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .padding(20.dp),
+                expanded = menuExpanded,
+                onExpandedChange = { menuExpanded = it },
+                collapsedContentDescription = "メニューを開く",
+                expandedContentDescription = "メニューを閉じる",
             )
         }
     }

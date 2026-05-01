@@ -10,19 +10,25 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -30,8 +36,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.material3.contentColorFor
+import jp.developer.bbee.richuidemo.ui.theme.RichUiDemoTheme
 
 data class BubbleMenuItem(
     val icon: ImageVector,
@@ -44,14 +51,14 @@ data class BubbleMenuItem(
 @Composable
 fun BubbleMenuButton(
     items: List<BubbleMenuItem>,
+    modifier: Modifier = Modifier,
     expanded: Boolean,
     onExpandedChange: (Boolean) -> Unit,
-    modifier: Modifier = Modifier,
     mainIcon: ImageVector = Icons.Default.Add,
     containerColor: Color = MaterialTheme.colorScheme.primary,
     contentColor: Color = MaterialTheme.colorScheme.onPrimary,
-    collapsedContentDescription: String = "メニューを開く",
-    expandedContentDescription: String = "メニューを閉じる",
+    collapsedContentDescription: String,
+    expandedContentDescription: String,
 ) {
     val rotation by animateFloatAsState(
         targetValue = if (expanded) 45f else 0f,
@@ -144,6 +151,51 @@ private fun BubbleMenuItemRow(
             Icon(
                 imageVector = item.icon,
                 contentDescription = item.label,
+            )
+        }
+    }
+}
+
+private val previewItems = listOf(
+    BubbleMenuItem(icon = Icons.Default.Share, label = "シェア", onClick = {}),
+    BubbleMenuItem(icon = Icons.Default.Edit, label = "編集", onClick = {}),
+    BubbleMenuItem(
+        icon = Icons.Default.Delete,
+        label = "削除",
+        containerColor = Color(0xFFBA1A1A),
+        onClick = {},
+    ),
+)
+
+@Preview(showBackground = true, name = "Collapsed")
+@Composable
+private fun BubbleMenuButtonCollapsedPreview() {
+    RichUiDemoTheme {
+        Box(modifier = Modifier.size(120.dp), contentAlignment = Alignment.BottomEnd) {
+            BubbleMenuButton(
+                items = previewItems,
+                modifier = Modifier.padding(16.dp),
+                expanded = false,
+                onExpandedChange = {},
+                collapsedContentDescription = "メニューを開く",
+                expandedContentDescription = "メニューを閉じる",
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true, name = "Expanded")
+@Composable
+private fun BubbleMenuButtonExpandedPreview() {
+    RichUiDemoTheme {
+        Box(modifier = Modifier.size(300.dp), contentAlignment = Alignment.BottomEnd) {
+            BubbleMenuButton(
+                items = previewItems,
+                modifier = Modifier.padding(16.dp),
+                expanded = true,
+                onExpandedChange = {},
+                collapsedContentDescription = "メニューを開く",
+                expandedContentDescription = "メニューを閉じる",
             )
         }
     }

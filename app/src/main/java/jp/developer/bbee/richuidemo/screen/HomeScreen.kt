@@ -46,6 +46,7 @@ fun HomeScreen(
     onNavigateToWidgetSamples: () -> Unit,
     onNavigateToDragDropList: () -> Unit,
     onNavigateToBubbleMenu: () -> Unit,
+    onNavigateToPictureInPicture: () -> Unit,
 ) {
     Scaffold(
         topBar = {
@@ -338,6 +339,46 @@ fun HomeScreen(
                     ) {
                         Text(
                             text = "＋  ●  ●  ●",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onTertiaryContainer,
+                        )
+                        Text(
+                            text = "Tap to explore  →",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onTertiaryContainer,
+                        )
+                    }
+                }
+            }
+
+            item {
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+            }
+
+            item {
+                DemoSectionCard(
+                    title = "Picture in Picture",
+                    description = "Draggable & resizable floating overlay — slide from right",
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = onNavigateToPictureInPicture,
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                    ),
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(96.dp)
+                            .padding(horizontal = 20.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                    ) {
+                        Text(
+                            text = "⬜ ▶  ⬛",
                             style = MaterialTheme.typography.titleMedium,
                             color = MaterialTheme.colorScheme.onTertiaryContainer,
                         )

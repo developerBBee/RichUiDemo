@@ -47,6 +47,7 @@ data class BubbleMenuItem(
     val label: String,
     val containerColor: Color = Color.Unspecified,
     val contentColor: Color = Color.Unspecified,
+    val id: Any = label,
     val onClick: () -> Unit,
 )
 
@@ -78,7 +79,7 @@ fun BubbleMenuButton(
     ) {
         val reversedItems = remember(items) { items.asReversed() }
         reversedItems.forEach { item ->
-            key(item.label) {
+            key(item.id) {
                 AnimatedVisibility(
                     visible = expanded,
                     enter = slideInVertically(

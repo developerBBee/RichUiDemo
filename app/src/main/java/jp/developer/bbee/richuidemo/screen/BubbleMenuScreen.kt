@@ -31,7 +31,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
@@ -54,8 +53,6 @@ import jp.developer.bbee.richuidemo.component.BubbleMenuButton
 import jp.developer.bbee.richuidemo.component.BubbleMenuItem
 import jp.developer.bbee.richuidemo.ui.theme.RichUiDemoTheme
 import kotlinx.coroutines.launch
-
-private val FabBottomOffset = 76.dp // FAB height (56dp) + FAB padding from edge (20dp)
 
 private data class AppListEntry(val title: String, val category: String, val color: Color)
 
@@ -119,13 +116,15 @@ fun BubbleMenuScreen(onBack: () -> Unit) {
                 navigationIcon = { BackNavigationIcon(onClick = onBack) },
             )
         },
-        snackbarHost = {
-            SnackbarHost(snackbarHostState) { data ->
-                Snackbar(
-                    snackbarData = data,
-                    modifier = Modifier.padding(bottom = FabBottomOffset),
-                )
-            }
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        floatingActionButton = {
+            BubbleMenuButton(
+                items = bubbleItems,
+                expanded = menuExpanded,
+                onExpandedChange = { menuExpanded = it },
+                collapsedContentDescription = "メニューを開く",
+                expandedContentDescription = "メニューを閉じる",
+            )
         },
     ) { innerPadding ->
         Box(
@@ -167,17 +166,6 @@ fun BubbleMenuScreen(onBack: () -> Unit) {
                         ) { menuExpanded = false },
                 )
             }
-
-            BubbleMenuButton(
-                items = bubbleItems,
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(20.dp),
-                expanded = menuExpanded,
-                onExpandedChange = { menuExpanded = it },
-                collapsedContentDescription = "メニューを開く",
-                expandedContentDescription = "メニューを閉じる",
-            )
         }
     }
 }

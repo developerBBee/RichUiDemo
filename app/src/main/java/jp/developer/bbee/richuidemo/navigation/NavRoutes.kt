@@ -20,3 +20,6 @@ data object HorizontalScrollCardsRoute : NavKey
 
 @Serializable
 data object WidgetSamplesRoute : NavKey
+
+@Serializable
+data object DragDropListRoute : NavKey

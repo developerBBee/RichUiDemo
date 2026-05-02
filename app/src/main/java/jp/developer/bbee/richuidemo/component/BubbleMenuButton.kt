@@ -47,7 +47,7 @@ data class BubbleMenuItem(
     val label: String,
     val containerColor: Color = Color.Unspecified,
     val contentColor: Color = Color.Unspecified,
-    val id: Any = label,
+    val id: String = label,
     val onClick: () -> Unit,
 )
 

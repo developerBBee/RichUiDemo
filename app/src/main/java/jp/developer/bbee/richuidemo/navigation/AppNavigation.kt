@@ -21,6 +21,7 @@ import jp.developer.bbee.richuidemo.screen.BubbleMenuScreen
 import jp.developer.bbee.richuidemo.screen.CombinedDemoScreen
 import jp.developer.bbee.richuidemo.screen.DragDropListScreen
 import jp.developer.bbee.richuidemo.screen.HomeScreen
+import jp.developer.bbee.richuidemo.screen.PictureInPictureScreen
 import jp.developer.bbee.richuidemo.screen.HorizontalScrollCardsScreen
 import jp.developer.bbee.richuidemo.screen.SurfaceDemoScreen
 import jp.developer.bbee.richuidemo.screen.WidgetSamplesScreen
@@ -42,6 +43,7 @@ fun AppNavigation() {
                     onNavigateToWidgetSamples = { backStack.add(WidgetSamplesRoute) },
                     onNavigateToDragDropList = { backStack.add(DragDropListRoute) },
                     onNavigateToBubbleMenu = { backStack.add(BubbleMenuRoute) },
+                    onNavigateToPictureInPicture = { backStack.add(PictureInPictureRoute) },
                 )
             }
 
@@ -108,6 +110,10 @@ fun AppNavigation() {
 
             entry<BubbleMenuRoute>(metadata = horizontalSlideMetadata) {
                 BubbleMenuScreen(onBack = { backStack.removeLastOrNull() })
+            }
+
+            entry<PictureInPictureRoute>(metadata = horizontalSlideMetadata) {
+                PictureInPictureScreen(onBack = { backStack.removeLastOrNull() })
             }
         },
     )

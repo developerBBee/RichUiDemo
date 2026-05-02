@@ -26,3 +26,6 @@ data object DragDropListRoute : NavKey
 
 @Serializable
 data object BubbleMenuRoute : NavKey
+
+@Serializable
+data object PictureInPictureRoute : NavKey

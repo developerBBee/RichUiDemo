@@ -45,6 +45,7 @@ fun HomeScreen(
     onNavigateToHorizontalScrollCards: () -> Unit,
     onNavigateToWidgetSamples: () -> Unit,
     onNavigateToDragDropList: () -> Unit,
+    onNavigateToBubbleMenu: () -> Unit,
 ) {
     Scaffold(
         topBar = {
@@ -305,6 +306,46 @@ fun HomeScreen(
                                 color = MaterialTheme.colorScheme.onSecondaryContainer,
                             )
                         }
+                    }
+                }
+            }
+
+            item {
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+            }
+
+            item {
+                DemoSectionCard(
+                    title = "Bubble Menu Button",
+                    description = "Expandable FAB · spring animation · scrim overlay",
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = onNavigateToBubbleMenu,
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                    ),
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(96.dp)
+                            .padding(horizontal = 20.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                    ) {
+                        Text(
+                            text = "＋  ●  ●  ●",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onTertiaryContainer,
+                        )
+                        Text(
+                            text = "Tap to explore  →",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onTertiaryContainer,
+                        )
                     }
                 }
             }

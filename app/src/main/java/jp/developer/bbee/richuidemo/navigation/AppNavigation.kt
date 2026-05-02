@@ -17,6 +17,7 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
 import jp.developer.bbee.richuidemo.screen.BorderDemoScreen
+import jp.developer.bbee.richuidemo.screen.BubbleMenuScreen
 import jp.developer.bbee.richuidemo.screen.CombinedDemoScreen
 import jp.developer.bbee.richuidemo.screen.DragDropListScreen
 import jp.developer.bbee.richuidemo.screen.HomeScreen
@@ -40,6 +41,7 @@ fun AppNavigation() {
                     onNavigateToHorizontalScrollCards = { backStack.add(HorizontalScrollCardsRoute) },
                     onNavigateToWidgetSamples = { backStack.add(WidgetSamplesRoute) },
                     onNavigateToDragDropList = { backStack.add(DragDropListRoute) },
+                    onNavigateToBubbleMenu = { backStack.add(BubbleMenuRoute) },
                 )
             }
 
@@ -102,6 +104,10 @@ fun AppNavigation() {
 
             entry<DragDropListRoute>(metadata = horizontalSlideMetadata) {
                 DragDropListScreen(onBack = { backStack.removeLastOrNull() })
+            }
+
+            entry<BubbleMenuRoute>(metadata = horizontalSlideMetadata) {
+                BubbleMenuScreen(onBack = { backStack.removeLastOrNull() })
             }
         },
     )

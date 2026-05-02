@@ -66,7 +66,7 @@ fun BubbleMenuButton(
     collapsedContentDescription: String,
     expandedContentDescription: String,
 ) {
-    check(items.distinctBy { it.id }.size == items.size) {
+    require(items.distinctBy { it.id }.size == items.size) {
         "BubbleMenuButton: each BubbleMenuItem must have a unique id"
     }
 

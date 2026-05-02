@@ -7,6 +7,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -169,6 +171,7 @@ fun BubbleMenuScreen(onBack: () -> Unit) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
+                        .semantics { contentDescription = "メニューを閉じる" }
                         .background(Color.Black.copy(alpha = 0.35f))
                         .clickable(
                             interactionSource = remember { MutableInteractionSource() },

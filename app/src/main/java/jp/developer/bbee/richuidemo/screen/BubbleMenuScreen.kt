@@ -124,7 +124,7 @@ fun BubbleMenuScreen(onBack: () -> Unit) {
             Box(modifier = if (menuExpanded) Modifier.clearAndSetSemantics {} else Modifier) {
                 TopAppBar(
                     title = { Text("Bubble Menu Button") },
-                    navigationIcon = { BackNavigationIcon(onClick = onBack) },
+                    navigationIcon = { BackNavigationIcon(onClick = { if (menuExpanded) menuExpanded = false else onBack() }) },
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = MaterialTheme.colorScheme.surfaceContainer,
                     ),

@@ -121,13 +121,15 @@ fun BubbleMenuScreen(onBack: () -> Unit) {
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("Bubble Menu Button") },
-                navigationIcon = { BackNavigationIcon(onClick = onBack) },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainer,
-                ),
-            )
+            Box(modifier = if (menuExpanded) Modifier.clearAndSetSemantics {} else Modifier) {
+                TopAppBar(
+                    title = { Text("Bubble Menu Button") },
+                    navigationIcon = { BackNavigationIcon(onClick = onBack) },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                    ),
+                )
+            }
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
         floatingActionButton = {

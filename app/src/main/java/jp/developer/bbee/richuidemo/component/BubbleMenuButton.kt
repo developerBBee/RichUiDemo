@@ -137,6 +137,10 @@ private fun BubbleMenuItemRow(
         horizontalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         Surface(
+            onClick = {
+                item.onClick()
+                onDismiss()
+            },
             shape = RoundedCornerShape(50),
             color = MaterialTheme.colorScheme.surface,
             shadowElevation = 3.dp,

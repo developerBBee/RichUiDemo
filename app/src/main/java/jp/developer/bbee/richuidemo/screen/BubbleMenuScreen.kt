@@ -36,6 +36,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -69,6 +70,7 @@ private val sampleItems = listOf(
 @Composable
 fun BubbleMenuScreen(onBack: () -> Unit) {
     var menuExpanded by remember { mutableStateOf(false) }
+    BackHandler(enabled = menuExpanded) { menuExpanded = false }
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     val favoriteContainerColor = MaterialTheme.colorScheme.tertiaryContainer
@@ -79,6 +81,7 @@ fun BubbleMenuScreen(onBack: () -> Unit) {
             BubbleMenuItem(
                 icon = Icons.Default.Favorite,
                 label = "お気に入り",
+                id = "favorite",
                 containerColor = favoriteContainerColor,
                 onClick = {
                     scope.launch { snackbarHostState.showSnackbar("お気に入りに追加しました") }
@@ -87,6 +90,7 @@ fun BubbleMenuScreen(onBack: () -> Unit) {
             BubbleMenuItem(
                 icon = Icons.Default.Share,
                 label = "シェア",
+                id = "share",
                 onClick = {
                     scope.launch { snackbarHostState.showSnackbar("シェアしました") }
                 },
@@ -94,6 +98,7 @@ fun BubbleMenuScreen(onBack: () -> Unit) {
             BubbleMenuItem(
                 icon = Icons.Default.Edit,
                 label = "編集",
+                id = "edit",
                 onClick = {
                     scope.launch { snackbarHostState.showSnackbar("編集モードを開始します") }
                 },
@@ -101,6 +106,7 @@ fun BubbleMenuScreen(onBack: () -> Unit) {
             BubbleMenuItem(
                 icon = Icons.Default.Delete,
                 label = "削除",
+                id = "delete",
                 containerColor = errorColor,
                 onClick = {
                     scope.launch { snackbarHostState.showSnackbar("削除しました") }

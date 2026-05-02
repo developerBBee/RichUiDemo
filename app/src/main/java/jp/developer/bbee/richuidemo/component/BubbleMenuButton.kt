@@ -37,6 +37,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -47,7 +48,7 @@ data class BubbleMenuItem(
     val label: String,
     val containerColor: Color = Color.Unspecified,
     val contentColor: Color = Color.Unspecified,
-    val id: String = label,
+    val id: String,
     val onClick: () -> Unit,
 )
 
@@ -167,11 +168,12 @@ private fun BubbleMenuItemRow(
 private fun BubbleMenuButtonCollapsedPreview() {
     RichUiDemoTheme {
         val previewItems = listOf(
-            BubbleMenuItem(icon = Icons.Default.Share, label = "シェア", onClick = {}),
-            BubbleMenuItem(icon = Icons.Default.Edit, label = "編集", onClick = {}),
+            BubbleMenuItem(icon = Icons.Default.Share, label = "シェア", id = "share", onClick = {}),
+            BubbleMenuItem(icon = Icons.Default.Edit, label = "編集", id = "edit", onClick = {}),
             BubbleMenuItem(
                 icon = Icons.Default.Delete,
                 label = "削除",
+                id = "delete",
                 containerColor = MaterialTheme.colorScheme.error,
                 onClick = {},
             ),
@@ -194,11 +196,12 @@ private fun BubbleMenuButtonCollapsedPreview() {
 private fun BubbleMenuButtonExpandedPreview() {
     RichUiDemoTheme {
         val previewItems = listOf(
-            BubbleMenuItem(icon = Icons.Default.Share, label = "シェア", onClick = {}),
-            BubbleMenuItem(icon = Icons.Default.Edit, label = "編集", onClick = {}),
+            BubbleMenuItem(icon = Icons.Default.Share, label = "シェア", id = "share", onClick = {}),
+            BubbleMenuItem(icon = Icons.Default.Edit, label = "編集", id = "edit", onClick = {}),
             BubbleMenuItem(
                 icon = Icons.Default.Delete,
                 label = "削除",
+                id = "delete",
                 containerColor = MaterialTheme.colorScheme.error,
                 onClick = {},
             ),

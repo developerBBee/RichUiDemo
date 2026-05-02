@@ -36,6 +36,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -120,6 +121,9 @@ fun BubbleMenuScreen(onBack: () -> Unit) {
             TopAppBar(
                 title = { Text("Bubble Menu Button") },
                 navigationIcon = { BackNavigationIcon(onClick = onBack) },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                ),
             )
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },

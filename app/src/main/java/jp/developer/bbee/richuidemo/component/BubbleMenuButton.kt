@@ -64,6 +64,10 @@ fun BubbleMenuButton(
     collapsedContentDescription: String,
     expandedContentDescription: String,
 ) {
+    check(items.distinctBy { it.id }.size == items.size) {
+        "BubbleMenuButton: each BubbleMenuItem must have a unique id"
+    }
+
     val rotation by animateFloatAsState(
         targetValue = if (expanded) 45f else 0f,
         animationSpec = spring(

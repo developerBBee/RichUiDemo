@@ -92,6 +92,12 @@ fun PictureInPictureScreen(onBack: () -> Unit) {
     var isMinimized by remember { mutableStateOf(false) }
     var initialized by remember { mutableStateOf(false) }
 
+    val animatedHeight by animateDpAsState(
+        targetValue = if (isMinimized) PipHeaderHeight else pipHeight,
+        animationSpec = tween(220),
+        label = "pip_height",
+    )
+
     val infiniteTransition = rememberInfiniteTransition(label = "pip_anim")
     val hue by infiniteTransition.animateFloat(
         initialValue = 0f,
@@ -134,11 +140,21 @@ fun PictureInPictureScreen(onBack: () -> Unit) {
                 }
             }
 
-            val targetHeight = if (isMinimized) PipHeaderHeight else pipHeight
             val pipWidthPx = with(density) { pipWidth.toPx() }
-            val pipHeightPx = with(density) { targetHeight.toPx() }
-            val clampedX = offsetX.coerceIn(0f, (maxW - pipWidthPx).coerceAtLeast(0f))
-            val clampedY = offsetY.coerceIn(0f, (maxH - pipHeightPx).coerceAtLeast(0f))
+            val pipHeightPx = with(density) { animatedHeight.toPx() }
+            val maxOffsetX = (maxW - pipWidthPx).coerceAtLeast(0f)
+            val maxOffsetY = (maxH - pipHeightPx).coerceAtLeast(0f)
+
+            // Re-clamp stored offset state when the available bounds shrink
+            // (e.g. configuration change or PiP resize), so subsequent drags
+            // don't have to first walk the offset back into range.
+            LaunchedEffect(maxOffsetX, maxOffsetY) {
+                offsetX = offsetX.coerceIn(0f, maxOffsetX)
+                offsetY = offsetY.coerceIn(0f, maxOffsetY)
+            }
+
+            val clampedX = offsetX.coerceIn(0f, maxOffsetX)
+            val clampedY = offsetY.coerceIn(0f, maxOffsetY)
 
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
@@ -161,12 +177,13 @@ fun PictureInPictureScreen(onBack: () -> Unit) {
                     .offset { IntOffset(clampedX.roundToInt(), clampedY.roundToInt()) }
                     .width(pipWidth),
                 pipHeight = pipHeight,
+                animatedHeight = animatedHeight,
                 isMinimized = isMinimized,
                 hue = hue,
                 scanline = scanline,
                 onDragHeader = { dx, dy ->
-                    offsetX = (offsetX + dx).coerceIn(0f, (maxW - pipWidthPx).coerceAtLeast(0f))
-                    offsetY = (offsetY + dy).coerceIn(0f, (maxH - pipHeightPx).coerceAtLeast(0f))
+                    offsetX = (offsetX + dx).coerceIn(0f, maxOffsetX)
+                    offsetY = (offsetY + dy).coerceIn(0f, maxOffsetY)
                 },
                 onResize = { dx, dy ->
                     with(density) {
@@ -174,8 +191,8 @@ fun PictureInPictureScreen(onBack: () -> Unit) {
                         val newHeight = (pipHeight + dy.toDp()).coerceIn(PipMinHeight, PipMaxHeight)
                         pipWidth = newWidth
                         pipHeight = newHeight
-                        offsetX = offsetX.coerceAtMost(maxW - newWidth.toPx())
-                        offsetY = offsetY.coerceAtMost(maxH - newHeight.toPx())
+                        offsetX = offsetX.coerceIn(0f, (maxW - newWidth.toPx()).coerceAtLeast(0f))
+                        offsetY = offsetY.coerceIn(0f, (maxH - newHeight.toPx()).coerceAtLeast(0f))
                     }
                 },
                 onToggleMinimize = { isMinimized = !isMinimized },
@@ -238,6 +255,7 @@ private fun FeedCard(item: FeedItem) {
 private fun PipWindow(
     modifier: Modifier,
     pipHeight: Dp,
+    animatedHeight: Dp,
     isMinimized: Boolean,
     hue: Float,
     scanline: Float,
@@ -245,11 +263,6 @@ private fun PipWindow(
     onResize: (Float, Float) -> Unit,
     onToggleMinimize: () -> Unit,
 ) {
-    val animatedHeight by animateDpAsState(
-        targetValue = if (isMinimized) PipHeaderHeight else pipHeight,
-        animationSpec = tween(220),
-        label = "pip_height",
-    )
     val showContent = animatedHeight > PipHeaderHeight + 8.dp
 
     Box(

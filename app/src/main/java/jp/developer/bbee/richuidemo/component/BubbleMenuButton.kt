@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -39,6 +40,7 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import jp.developer.bbee.richuidemo.ui.theme.RichUiDemoTheme
@@ -133,6 +135,9 @@ private fun BubbleMenuItemRow(
     }
 
     Row(
+        modifier = Modifier
+            .semantics(mergeDescendants = true) {}
+            .heightIn(min = 48.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(10.dp),
     ) {
@@ -165,7 +170,7 @@ private fun BubbleMenuItemRow(
         ) {
             Icon(
                 imageVector = item.icon,
-                contentDescription = item.label,
+                contentDescription = null,
             )
         }
     }

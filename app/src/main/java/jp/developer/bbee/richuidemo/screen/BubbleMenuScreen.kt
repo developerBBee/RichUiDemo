@@ -137,25 +137,27 @@ fun BubbleMenuScreen(onBack: () -> Unit) {
             )
         },
     ) { innerPadding ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding),
-        ) {
-            LazyColumn(
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
+        Box(modifier = Modifier.fillMaxSize()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
             ) {
-                item {
-                    Text(
-                        text = "右下の + ボタンをタップしてメニューを開く",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(bottom = 4.dp),
-                    )
-                }
-                items(sampleItems) { entry ->
-                    AppListItem(entry = entry)
+                LazyColumn(
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    item {
+                        Text(
+                            text = "右下の + ボタンをタップしてメニューを開く",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(bottom = 4.dp),
+                        )
+                    }
+                    items(sampleItems) { entry ->
+                        AppListItem(entry = entry)
+                    }
                 }
             }
 

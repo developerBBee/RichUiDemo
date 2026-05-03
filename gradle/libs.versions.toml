@@ -38,3 +38,4 @@ android-lint-checks = { group = "com.android.tools.lint", name = "lint-checks", 
 androidApplication = { id = "com.android.application", version.ref = "agp" }
 kotlinCompose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+kotlinJvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }

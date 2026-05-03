@@ -38,13 +38,14 @@ class MyScaffoldPaddingDetector : Detector(), SourceCodeScanner {
     private fun isPaddingUsed(context: JavaContext, node: UCallExpression, lambda: ULambdaExpression): Boolean {
         val sourceSnippet = extractCallSnippet(context, node)
         if (!sourceSnippet.isNullOrBlank()) {
-            val explicitBySnippet = extractExplicitParameterName(sourceSnippet)
+            val lambdaStart = sourceSnippet.indexOf('{').takeIf { it >= 0 }
+            val explicitBySnippet = lambdaStart?.let { extractExplicitParameterName(sourceSnippet.substring(it)) }
             if (!explicitBySnippet.isNullOrBlank()) {
                 if (explicitBySnippet == "_") return false
                 val bodyText = sourceSnippet.substringAfter("->", missingDelimiterValue = "")
                 return containsIdentifier(bodyText, explicitBySnippet)
             }
-            if (containsIdentifier(sourceSnippet, "it")) {
+            if (isItReferencedInLambda(lambda)) {
                 return true
             }
         }
@@ -58,7 +59,9 @@ class MyScaffoldPaddingDetector : Detector(), SourceCodeScanner {
             lambda.body.accept(
                 object : AbstractUastVisitor() {
                     override fun visitSimpleNameReferenceExpression(node: USimpleNameReferenceExpression): Boolean {
-                        if (node.identifier == parameterName && node.resolve() == explicitParam) {
+                        val resolved = node.resolve()
+                        if (node.identifier == parameterName &&
+                            (resolved == explicitParam.javaPsi || resolved == explicitParam.sourcePsi)) {
                             used = true
                             return true
                         }
@@ -78,7 +81,10 @@ class MyScaffoldPaddingDetector : Detector(), SourceCodeScanner {
         }
 
         val callText = node.sourcePsi?.text
-        val explicitByCallText = callText?.let { extractExplicitParameterName(it) }
+        val explicitByCallText = callText?.let { text ->
+            val lambdaStart = text.indexOf('{').takeIf { it >= 0 }
+            lambdaStart?.let { extractExplicitParameterName(text.substring(it)) }
+        }
         if (!explicitByCallText.isNullOrBlank()) {
             if (explicitByCallText == "_") return false
             val bodyText = callText.substringAfter("->", missingDelimiterValue = "")
@@ -94,6 +100,20 @@ class MyScaffoldPaddingDetector : Detector(), SourceCodeScanner {
         return containsIdentifier(lambdaText, "it")
     }
 
+    private fun isItReferencedInLambda(lambda: ULambdaExpression): Boolean {
+        var found = false
+        lambda.body.accept(object : AbstractUastVisitor() {
+            override fun visitSimpleNameReferenceExpression(node: USimpleNameReferenceExpression): Boolean {
+                if (node.identifier == "it") {
+                    found = true
+                    return true
+                }
+                return super.visitSimpleNameReferenceExpression(node)
+            }
+        })
+        return found
+    }
+
     private fun extractCallSnippet(context: JavaContext, node: UCallExpression): String? {
         val direct = node.sourcePsi?.text
         if (!direct.isNullOrBlank()) return direct
@@ -105,7 +125,7 @@ class MyScaffoldPaddingDetector : Detector(), SourceCodeScanner {
     }
 
     private fun extractExplicitParameterName(text: String): String? {
-        val match = Regex("\\{\\s*([A-Za-z_][A-Za-z0-9_]*)\\s*->").find(text) ?: return null
+        val match = Regex("^\\{\\s*([A-Za-z_][A-Za-z0-9_]*)\\s*->").find(text) ?: return null
         return match.groupValues.getOrNull(1)
     }
 

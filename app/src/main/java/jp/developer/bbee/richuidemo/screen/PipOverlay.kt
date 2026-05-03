@@ -42,6 +42,9 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
@@ -78,6 +81,8 @@ fun PipOverlay(
     if (!pipState.isVisible) return
 
     val density = LocalDensity.current
+    val statusBarPx = WindowInsets.statusBars.getTop(density).toFloat()
+    val navBarPx = WindowInsets.navigationBars.getBottom(density).toFloat()
 
     val animatedHeight by animateDpAsState(
         targetValue = if (pipState.isMinimized) PipHeaderHeight else pipState.pipHeight,
@@ -93,7 +98,7 @@ fun PipOverlay(
             if (!pipState.initialized && constraints.maxWidth > 0) {
                 val pipWidthPx = with(density) { pipState.pipWidth.toPx() }
                 pipState.offsetX = maxW - pipWidthPx - with(density) { 16.dp.toPx() }
-                pipState.offsetY = with(density) { 16.dp.toPx() }
+                pipState.offsetY = statusBarPx + with(density) { 16.dp.toPx() }
                 pipState.initialized = true
             }
         }
@@ -101,15 +106,16 @@ fun PipOverlay(
         val pipWidthPx = with(density) { pipState.pipWidth.toPx() }
         val pipHeightPx = with(density) { animatedHeight.toPx() }
         val maxOffsetX = (maxW - pipWidthPx).coerceAtLeast(0f)
-        val maxOffsetY = (maxH - pipHeightPx).coerceAtLeast(0f)
+        val minOffsetY = statusBarPx
+        val maxOffsetY = (maxH - navBarPx - pipHeightPx).coerceAtLeast(minOffsetY)
 
-        LaunchedEffect(maxOffsetX, maxOffsetY) {
+        LaunchedEffect(maxOffsetX, minOffsetY, maxOffsetY) {
             pipState.offsetX = pipState.offsetX.coerceIn(0f, maxOffsetX)
-            pipState.offsetY = pipState.offsetY.coerceIn(0f, maxOffsetY)
+            pipState.offsetY = pipState.offsetY.coerceIn(minOffsetY, maxOffsetY)
         }
 
         val clampedX = pipState.offsetX.coerceIn(0f, maxOffsetX)
-        val clampedY = pipState.offsetY.coerceIn(0f, maxOffsetY)
+        val clampedY = pipState.offsetY.coerceIn(minOffsetY, maxOffsetY)
 
         PipWindow(
             modifier = Modifier
@@ -122,7 +128,7 @@ fun PipOverlay(
             scanline = scanline,
             onDragHeader = { dx, dy ->
                 pipState.offsetX = (pipState.offsetX + dx).coerceIn(0f, maxOffsetX)
-                pipState.offsetY = (pipState.offsetY + dy).coerceIn(0f, maxOffsetY)
+                pipState.offsetY = (pipState.offsetY + dy).coerceIn(minOffsetY, maxOffsetY)
             },
             onResize = { dx, dy ->
                 with(density) {
@@ -131,7 +137,7 @@ fun PipOverlay(
                     pipState.pipWidth = newWidth
                     pipState.pipHeight = newHeight
                     pipState.offsetX = pipState.offsetX.coerceIn(0f, (maxW - newWidth.toPx()).coerceAtLeast(0f))
-                    pipState.offsetY = pipState.offsetY.coerceIn(0f, (maxH - newHeight.toPx()).coerceAtLeast(0f))
+                    pipState.offsetY = pipState.offsetY.coerceIn(minOffsetY, (maxH - navBarPx - newHeight.toPx()).coerceAtLeast(minOffsetY))
                 }
             },
             onToggleMinimize = { pipState.isMinimized = !pipState.isMinimized },

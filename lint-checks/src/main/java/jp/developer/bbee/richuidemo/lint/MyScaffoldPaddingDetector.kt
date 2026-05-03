@@ -43,7 +43,9 @@ class MyScaffoldPaddingDetector : Detector(), SourceCodeScanner {
             if (!explicitBySnippet.isNullOrBlank()) {
                 if (explicitBySnippet == "_") return false
                 val bodyText = sourceSnippet.substringAfter("->", missingDelimiterValue = "")
-                return containsIdentifier(bodyText, explicitBySnippet)
+                // Only treat as positive signal: snippet may be truncated, so a miss here
+                // does not mean the parameter is unused — fall through to UAST checks.
+                if (containsIdentifier(bodyText, explicitBySnippet)) return true
             }
             if (isItReferencedInLambda(lambda)) {
                 return true
@@ -89,11 +91,6 @@ class MyScaffoldPaddingDetector : Detector(), SourceCodeScanner {
                 val bodyText = callText.substringAfter("->", missingDelimiterValue = "")
                 return containsIdentifier(bodyText, explicitByCallText)
             }
-        }
-
-        // Fallback for cases where UAST drops explicit lambda parameter info under K2.
-        if (Regex("\\bpadding\\s*\\(").containsMatchIn(lambdaText)) {
-            return true
         }
 
         // Kotlin implicit single-parameter lambda uses `it`.

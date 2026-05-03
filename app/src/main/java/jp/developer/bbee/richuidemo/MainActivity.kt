@@ -1,10 +1,11 @@
 package jp.developer.bbee.richuidemo
 
+import android.app.PictureInPictureParams
+import android.app.PictureInPictureUiState
 import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
 import android.util.Rational
-import android.app.PictureInPictureParams
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -14,20 +15,41 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
+import androidx.core.app.PictureInPictureParamsCompat
+import androidx.core.app.PictureInPictureProvider
+import androidx.core.app.PictureInPictureUiStateCompat
+import androidx.core.content.ContextCompat
+import androidx.core.pip.BasicPictureInPicture
+import androidx.core.pip.PictureInPictureDelegate
+import androidx.core.util.Consumer
 import jp.developer.bbee.richuidemo.navigation.AppNavigation
 import jp.developer.bbee.richuidemo.ui.theme.RichUiDemoTheme
 
-class MainActivity : ComponentActivity() {
+class MainActivity : ComponentActivity(), PictureInPictureProvider {
 
-    // Observed by AppNavigation to switch to full-screen PiP UI
     val isInPipMode = mutableStateOf(false)
 
-    // Set by AppNavigation so this activity knows when PiP is active
-    var shouldEnterPip: () -> Boolean = { false }
+    private val basicPip by lazy { BasicPictureInPicture(this) }
+
+    private val uiStateListeners = mutableListOf<Consumer<PictureInPictureUiStateCompat>>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        basicPip.setAspectRatio(Rational(4, 3))
+        basicPip.addOnPictureInPictureEventListener(
+            ContextCompat.getMainExecutor(this),
+            object : PictureInPictureDelegate.OnPictureInPictureEventListener {
+                override fun onPictureInPictureEvent(event: PictureInPictureDelegate.Event, config: Configuration?) {
+                    when (event) {
+                        PictureInPictureDelegate.Event.ENTERED -> isInPipMode.value = true
+                        PictureInPictureDelegate.Event.EXITED -> isInPipMode.value = false
+                    }
+                }
+            },
+        )
+
         setContent {
             RichUiDemoTheme {
                 Surface(
@@ -40,37 +62,58 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    // Called from AppNavigation via SideEffect whenever pipState.isVisible changes.
-    // On API 31+, setPictureInPictureParams must be called *before* backgrounding so
-    // setAutoEnterEnabled takes effect (passing it only in enterPictureInPictureMode is a no-op).
-    fun updatePipParams() {
+    fun setPipEnabled(enabled: Boolean) {
+        basicPip.setEnabled(enabled)
+    }
+
+    // PictureInPictureProvider
+
+    override fun enterPictureInPictureMode(params: PictureInPictureParamsCompat) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val builder = PictureInPictureParams.Builder()
-                .setAspectRatio(Rational(4, 3))
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                builder.setAutoEnterEnabled(shouldEnterPip())
-            }
-            setPictureInPictureParams(builder.build())
+            enterPictureInPictureMode(params.toFrameworkParams())
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            @Suppress("DEPRECATION")
+            enterPictureInPictureMode()
         }
     }
 
-    // Fallback for API 26-30 (gesture nav does not call onUserLeaveHint on Android 10-11,
-    // but button nav does — keep this as a safety net for older devices / button navigation).
-    override fun onUserLeaveHint() {
-        super.onUserLeaveHint()
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && shouldEnterPip()) {
-            enterPictureInPictureMode(
-                PictureInPictureParams.Builder().setAspectRatio(Rational(4, 3)).build()
-            )
+    override fun setPictureInPictureParams(params: PictureInPictureParamsCompat) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            setPictureInPictureParams(params.toFrameworkParams())
         }
+    }
+
+    override fun addOnPictureInPictureUiStateChangedListener(listener: Consumer<PictureInPictureUiStateCompat>) {
+        uiStateListeners.add(listener)
+    }
+
+    override fun removeOnPictureInPictureUiStateChangedListener(listener: Consumer<PictureInPictureUiStateCompat>) {
+        uiStateListeners.remove(listener)
+    }
+
+    @RequiresApi(Build.VERSION_CODES.S)
+    override fun onPictureInPictureUiStateChanged(state: PictureInPictureUiState) {
+        super.onPictureInPictureUiStateChanged(state)
+        val compat = PictureInPictureUiStateCompat.fromPictureInPictureUiState(state)
+        uiStateListeners.forEach { it.accept(compat) }
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    override fun onPictureInPictureModeChanged(
-        isInPictureInPictureMode: Boolean,
-        newConfig: Configuration,
-    ) {
-        super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
-        isInPipMode.value = isInPictureInPictureMode
+    private fun PictureInPictureParamsCompat.toFrameworkParams(): PictureInPictureParams {
+        val builder = PictureInPictureParams.Builder()
+        aspectRatio?.let { builder.setAspectRatio(it) }
+        if (actions.isNotEmpty()) builder.setActions(actions)
+        sourceRectHint?.let { builder.setSourceRectHint(it) }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            builder.setAutoEnterEnabled(isEnabled)
+            builder.setSeamlessResizeEnabled(isSeamlessResizeEnabled)
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            expandedAspectRatio?.let { builder.setExpandedAspectRatio(it) }
+            closeAction?.let { builder.setCloseAction(it) }
+            title?.let { builder.setTitle(it) }
+            subTitle?.let { builder.setSubtitle(it) }
+        }
+        return builder.build()
     }
 }

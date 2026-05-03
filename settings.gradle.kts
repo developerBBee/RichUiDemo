@@ -21,3 +21,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "RichUiDemo"
 include(":app")
+include(":lint-checks")

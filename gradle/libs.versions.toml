@@ -10,6 +10,7 @@ activityCompose = "1.10.1"
 composeBom = "2026.04.01"
 navigation3 = "1.0.0"
 kotlinxSerializationJson = "1.8.1"
+androidLint = "32.1.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -30,6 +31,8 @@ androidx-material-icons-extended = { group = "androidx.compose.material", name =
 androidx-navigation3-runtime = { group = "androidx.navigation3", name = "navigation3-runtime", version.ref = "navigation3" }
 androidx-navigation3-ui = { group = "androidx.navigation3", name = "navigation3-ui", version.ref = "navigation3" }
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
+android-lint-api = { group = "com.android.tools.lint", name = "lint-api", version.ref = "androidLint" }
+android-lint-checks = { group = "com.android.tools.lint", name = "lint-checks", version.ref = "androidLint" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

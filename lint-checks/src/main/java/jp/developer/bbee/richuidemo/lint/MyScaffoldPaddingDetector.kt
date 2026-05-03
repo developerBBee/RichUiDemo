@@ -81,14 +81,14 @@ class MyScaffoldPaddingDetector : Detector(), SourceCodeScanner {
         }
 
         val callText = node.sourcePsi?.text
-        val explicitByCallText = callText?.let { text ->
-            val lambdaStart = text.indexOf('{').takeIf { it >= 0 }
-            lambdaStart?.let { extractExplicitParameterName(text.substring(it)) }
-        }
-        if (!explicitByCallText.isNullOrBlank()) {
-            if (explicitByCallText == "_") return false
-            val bodyText = callText.substringAfter("->", missingDelimiterValue = "")
-            return containsIdentifier(bodyText, explicitByCallText)
+        if (callText != null) {
+            val lambdaStart = callText.indexOf('{').takeIf { it >= 0 }
+            val explicitByCallText = lambdaStart?.let { extractExplicitParameterName(callText.substring(it)) }
+            if (!explicitByCallText.isNullOrBlank()) {
+                if (explicitByCallText == "_") return false
+                val bodyText = callText.substringAfter("->", missingDelimiterValue = "")
+                return containsIdentifier(bodyText, explicitByCallText)
+            }
         }
 
         // Fallback for cases where UAST drops explicit lambda parameter info under K2.
@@ -97,7 +97,7 @@ class MyScaffoldPaddingDetector : Detector(), SourceCodeScanner {
         }
 
         // Kotlin implicit single-parameter lambda uses `it`.
-        return containsIdentifier(lambdaText, "it")
+        return isItReferencedInLambda(lambda)
     }
 
     private fun isItReferencedInLambda(lambda: ULambdaExpression): Boolean {

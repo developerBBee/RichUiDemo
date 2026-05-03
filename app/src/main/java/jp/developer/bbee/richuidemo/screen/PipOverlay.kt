@@ -302,3 +302,52 @@ private fun ResizeHandle(modifier: Modifier, onResize: (Float, Float) -> Unit) {
         }
     }
 }
+
+// Shown when the activity enters Android native PiP mode — fills the shrunken window
+@Composable
+fun PipContent(hue: Float, scanline: Float) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black),
+        contentAlignment = Alignment.Center,
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.sweepGradient(
+                        colors = listOf(
+                            Color.hsv(hue, 0.8f, 0.55f),
+                            Color.hsv((hue + 72f) % 360f, 0.8f, 0.55f),
+                            Color.hsv((hue + 144f) % 360f, 0.8f, 0.55f),
+                            Color.hsv((hue + 216f) % 360f, 0.8f, 0.55f),
+                            Color.hsv((hue + 288f) % 360f, 0.8f, 0.55f),
+                            Color.hsv(hue, 0.8f, 0.55f),
+                        ),
+                    ),
+                ),
+        )
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            Color.Transparent,
+                            Color.White.copy(alpha = 0.18f),
+                            Color.Transparent,
+                        ),
+                        startY = scanline * 600f - 30f,
+                        endY = scanline * 600f + 30f,
+                    ),
+                ),
+        )
+        Icon(
+            imageVector = Icons.Filled.PlayArrow,
+            contentDescription = null,
+            tint = Color.White.copy(alpha = 0.85f),
+            modifier = Modifier.size(48.dp),
+        )
+    }
+}

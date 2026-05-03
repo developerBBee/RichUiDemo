@@ -21,7 +21,7 @@ class MyScaffoldPaddingDetector : Detector(), SourceCodeScanner {
         if (!isTargetMyScaffold(method)) return
 
         val lambda = node.valueArguments.lastOrNull { it is ULambdaExpression } as? ULambdaExpression ?: return
-        if (!isPaddingUsed(context, node, lambda)) {
+        if (!isPaddingUsed(lambda)) {
             context.report(
                 issue = ISSUE,
                 location = context.getNameLocation(node),
@@ -35,19 +35,7 @@ class MyScaffoldPaddingDetector : Detector(), SourceCodeScanner {
         return owner == "jp.developer.bbee.richuidemo.component.MyScaffoldKt"
     }
 
-    private fun isPaddingUsed(context: JavaContext, node: UCallExpression, lambda: ULambdaExpression): Boolean {
-        val sourceSnippet = extractCallSnippet(context, node)
-        if (!sourceSnippet.isNullOrBlank()) {
-            val lambdaStart = sourceSnippet.indexOf('{').takeIf { it >= 0 }
-            val explicitBySnippet = lambdaStart?.let { extractExplicitParameterName(sourceSnippet.substring(it)) }
-            // Only check for intentional ignore — text-based positive checks risk matching
-            // string literals or comments, causing false negatives.
-            if (!explicitBySnippet.isNullOrBlank() && explicitBySnippet == "_") return true
-            if (isItReferencedInLambda(lambda)) {
-                return true
-            }
-        }
-
+    private fun isPaddingUsed(lambda: ULambdaExpression): Boolean {
         val explicitParam = lambda.valueParameters.singleOrNull()
         if (explicitParam != null) {
             val parameterName = explicitParam.name
@@ -70,23 +58,13 @@ class MyScaffoldPaddingDetector : Detector(), SourceCodeScanner {
             return used
         }
 
+        // Fallback for K2 where UAST may not populate valueParameters: parse from lambda source.
         val lambdaText = lambda.sourcePsi?.text ?: lambda.asSourceString()
         val explicitByLambdaText = extractExplicitParameterName(lambdaText)
         if (!explicitByLambdaText.isNullOrBlank()) {
             if (explicitByLambdaText == "_") return true
             val bodyText = lambdaText.substringAfter("->", missingDelimiterValue = "")
             return containsIdentifier(bodyText, explicitByLambdaText)
-        }
-
-        val callText = node.sourcePsi?.text
-        if (callText != null) {
-            val lambdaStart = callText.indexOf('{').takeIf { it >= 0 }
-            val explicitByCallText = lambdaStart?.let { extractExplicitParameterName(callText.substring(it)) }
-            if (!explicitByCallText.isNullOrBlank()) {
-                if (explicitByCallText == "_") return true
-                val bodyText = callText.substringAfter("->", missingDelimiterValue = "")
-                return containsIdentifier(bodyText, explicitByCallText)
-            }
         }
 
         // Kotlin implicit single-parameter lambda uses `it`.
@@ -97,9 +75,10 @@ class MyScaffoldPaddingDetector : Detector(), SourceCodeScanner {
         var found = false
         lambda.body.accept(object : AbstractUastVisitor() {
             override fun visitLambdaExpression(node: ULambdaExpression): Boolean {
-                // Stop traversal into nested lambdas: `it` there belongs to the inner lambda,
-                // not to the outer scaffold content lambda.
-                return true
+                // Only stop traversal into nested lambdas that have their own parameters,
+                // which would shadow the outer `it`. Parameterless lambdas (e.g., remember { })
+                // can still capture the outer `it`.
+                return node.valueParameters.isNotEmpty()
             }
             override fun visitSimpleNameReferenceExpression(node: USimpleNameReferenceExpression): Boolean {
                 if (node.identifier == "it") {
@@ -110,16 +89,6 @@ class MyScaffoldPaddingDetector : Detector(), SourceCodeScanner {
             }
         })
         return found
-    }
-
-    private fun extractCallSnippet(context: JavaContext, node: UCallExpression): String? {
-        val direct = node.sourcePsi?.text
-        if (!direct.isNullOrBlank()) return direct
-
-        val contents = context.getContents() ?: return null
-        val start = context.getLocation(node).start?.offset ?: return null
-        val end = minOf(contents.length, start + 240)
-        return contents.substring(start, end)
     }
 
     private fun extractExplicitParameterName(text: String): String? {

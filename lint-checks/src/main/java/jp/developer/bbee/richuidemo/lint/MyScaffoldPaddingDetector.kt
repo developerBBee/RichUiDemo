@@ -8,6 +8,8 @@ import com.android.tools.lint.detector.api.JavaContext
 import com.android.tools.lint.detector.api.Scope
 import com.android.tools.lint.detector.api.Severity
 import com.android.tools.lint.detector.api.SourceCodeScanner
+import com.intellij.psi.PsiElement
+import org.jetbrains.kotlin.psi.KtLambdaExpression
 import org.jetbrains.uast.ULambdaExpression
 import org.jetbrains.uast.USimpleNameReferenceExpression
 import org.jetbrains.uast.UCallExpression
@@ -77,6 +79,11 @@ class MyScaffoldPaddingDetector : Detector(), SourceCodeScanner {
     private fun isNameReferencedInLambda(lambda: ULambdaExpression, name: String): Boolean {
         var found = false
         lambda.body.accept(object : AbstractUastVisitor() {
+            override fun visitLambdaExpression(node: ULambdaExpression): Boolean {
+                // Stop traversal into nested lambdas that declare a parameter with the same name,
+                // which would shadow the outer padding parameter.
+                return node.valueParameters.any { it.name == name }
+            }
             override fun visitSimpleNameReferenceExpression(node: USimpleNameReferenceExpression): Boolean {
                 if (node.identifier == name) {
                     found = true
@@ -89,16 +96,25 @@ class MyScaffoldPaddingDetector : Detector(), SourceCodeScanner {
     }
 
     private fun isItReferencedInLambda(lambda: ULambdaExpression): Boolean {
+        val outerLambdaPsi = lambda.sourcePsi
         var found = false
         lambda.body.accept(object : AbstractUastVisitor() {
             override fun visitLambdaExpression(node: ULambdaExpression): Boolean {
-                // Only stop traversal into nested lambdas that have their own parameters,
-                // which would shadow the outer `it`. Parameterless lambdas (e.g., remember { })
-                // can still capture the outer `it`.
+                // Stop traversal into nested lambdas with explicit parameters — they shadow `it`.
                 return node.valueParameters.isNotEmpty()
             }
             override fun visitSimpleNameReferenceExpression(node: USimpleNameReferenceExpression): Boolean {
                 if (node.identifier == "it") {
+                    val resolved = node.resolve()
+                    // If `it` resolves to a parameter defined inside a nested lambda (e.g.,
+                    // `items(list) { Text(it.name) }` where `it` is the list item), do not
+                    // count it as the outer scaffold padding. Parameterless lambdas that simply
+                    // capture the outer `it` (e.g., `remember { Modifier.padding(it) }`) will
+                    // have `it` resolve to the outer lambda's implicit parameter instead.
+                    if (outerLambdaPsi != null && resolved != null &&
+                        isDefinedInNestedLambda(resolved, outerLambdaPsi)) {
+                        return super.visitSimpleNameReferenceExpression(node)
+                    }
                     found = true
                     return true
                 }
@@ -106,6 +122,15 @@ class MyScaffoldPaddingDetector : Detector(), SourceCodeScanner {
             }
         })
         return found
+    }
+
+    private fun isDefinedInNestedLambda(element: PsiElement, outerLambdaPsi: PsiElement): Boolean {
+        var current: PsiElement? = element.parent
+        while (current != null && current !== outerLambdaPsi) {
+            if (current is KtLambdaExpression) return true
+            current = current.parent
+        }
+        return false
     }
 
     private fun extractExplicitParameterName(text: String): String? {

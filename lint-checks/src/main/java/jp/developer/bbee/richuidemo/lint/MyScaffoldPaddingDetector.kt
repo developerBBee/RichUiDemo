@@ -42,7 +42,7 @@ class MyScaffoldPaddingDetector : Detector(), SourceCodeScanner {
             val explicitBySnippet = lambdaStart?.let { extractExplicitParameterName(sourceSnippet.substring(it)) }
             // Only check for intentional ignore — text-based positive checks risk matching
             // string literals or comments, causing false negatives.
-            if (!explicitBySnippet.isNullOrBlank() && explicitBySnippet == "_") return false
+            if (!explicitBySnippet.isNullOrBlank() && explicitBySnippet == "_") return true
             if (isItReferencedInLambda(lambda)) {
                 return true
             }
@@ -51,7 +51,7 @@ class MyScaffoldPaddingDetector : Detector(), SourceCodeScanner {
         val explicitParam = lambda.valueParameters.singleOrNull()
         if (explicitParam != null) {
             val parameterName = explicitParam.name
-            if (parameterName == "_") return false
+            if (parameterName == "_") return true
 
             var used = false
             lambda.body.accept(
@@ -73,7 +73,7 @@ class MyScaffoldPaddingDetector : Detector(), SourceCodeScanner {
         val lambdaText = lambda.sourcePsi?.text ?: lambda.asSourceString()
         val explicitByLambdaText = extractExplicitParameterName(lambdaText)
         if (!explicitByLambdaText.isNullOrBlank()) {
-            if (explicitByLambdaText == "_") return false
+            if (explicitByLambdaText == "_") return true
             val bodyText = lambdaText.substringAfter("->", missingDelimiterValue = "")
             return containsIdentifier(bodyText, explicitByLambdaText)
         }
@@ -83,7 +83,7 @@ class MyScaffoldPaddingDetector : Detector(), SourceCodeScanner {
             val lambdaStart = callText.indexOf('{').takeIf { it >= 0 }
             val explicitByCallText = lambdaStart?.let { extractExplicitParameterName(callText.substring(it)) }
             if (!explicitByCallText.isNullOrBlank()) {
-                if (explicitByCallText == "_") return false
+                if (explicitByCallText == "_") return true
                 val bodyText = callText.substringAfter("->", missingDelimiterValue = "")
                 return containsIdentifier(bodyText, explicitByCallText)
             }

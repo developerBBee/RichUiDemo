@@ -40,25 +40,29 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    // Called when the user presses Home / switches apps — ideal moment to enter PiP
-    override fun onUserLeaveHint() {
-        super.onUserLeaveHint()
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && shouldEnterPip()) {
-            enterPip()
+    // Called from AppNavigation via SideEffect whenever pipState.isVisible changes.
+    // On API 31+, setPictureInPictureParams must be called *before* backgrounding so
+    // setAutoEnterEnabled takes effect (passing it only in enterPictureInPictureMode is a no-op).
+    fun updatePipParams() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val builder = PictureInPictureParams.Builder()
+                .setAspectRatio(Rational(4, 3))
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                builder.setAutoEnterEnabled(shouldEnterPip())
+            }
+            setPictureInPictureParams(builder.build())
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
-    private fun enterPip() {
-        val params = PictureInPictureParams.Builder()
-            .setAspectRatio(Rational(4, 3))
-            .apply {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    setAutoEnterEnabled(true)
-                }
-            }
-            .build()
-        enterPictureInPictureMode(params)
+    // Fallback for API 26-30 (gesture nav does not call onUserLeaveHint on Android 10-11,
+    // but button nav does — keep this as a safety net for older devices / button navigation).
+    override fun onUserLeaveHint() {
+        super.onUserLeaveHint()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && shouldEnterPip()) {
+            enterPictureInPictureMode(
+                PictureInPictureParams.Builder().setAspectRatio(Rational(4, 3)).build()
+            )
+        }
     }
 
     @RequiresApi(Build.VERSION_CODES.O)

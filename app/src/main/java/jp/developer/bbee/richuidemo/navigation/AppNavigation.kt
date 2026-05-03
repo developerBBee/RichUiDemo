@@ -46,9 +46,12 @@ fun AppNavigation() {
     val backStack = rememberNavBackStack(HomeRoute)
     val pipState = rememberPipState()
 
-    // Keep activity informed so onUserLeaveHint() knows whether to enter PiP
+    // Keep activity informed and pre-register PiP params so setAutoEnterEnabled takes effect.
+    // SideEffect runs after every successful recomposition, so params stay in sync with
+    // pipState.isVisible without needing a separate LaunchedEffect.
     SideEffect {
         activity.shouldEnterPip = { pipState.isVisible }
+        activity.updatePipParams()
     }
 
     val isInPipMode = activity.isInPipMode.value

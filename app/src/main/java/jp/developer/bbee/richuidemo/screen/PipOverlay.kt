@@ -46,6 +46,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -81,8 +82,11 @@ fun PipOverlay(
     if (!pipState.isVisible) return
 
     val density = LocalDensity.current
+    val layoutDir = LocalLayoutDirection.current
     val statusBarPx = WindowInsets.statusBars.getTop(density).toFloat()
-    val navBarPx = WindowInsets.navigationBars.getBottom(density).toFloat()
+    val navBarLeft = WindowInsets.navigationBars.getLeft(density, layoutDir).toFloat()
+    val navBarRight = WindowInsets.navigationBars.getRight(density, layoutDir).toFloat()
+    val navBarBottom = WindowInsets.navigationBars.getBottom(density).toFloat()
 
     val animatedHeight by animateDpAsState(
         targetValue = if (pipState.isMinimized) PipHeaderHeight else pipState.pipHeight,
@@ -97,7 +101,7 @@ fun PipOverlay(
         LaunchedEffect(constraints.maxWidth) {
             if (!pipState.initialized && constraints.maxWidth > 0) {
                 val pipWidthPx = with(density) { pipState.pipWidth.toPx() }
-                pipState.offsetX = maxW - pipWidthPx - with(density) { 16.dp.toPx() }
+                pipState.offsetX = maxW - navBarRight - pipWidthPx - with(density) { 16.dp.toPx() }
                 pipState.offsetY = statusBarPx + with(density) { 16.dp.toPx() }
                 pipState.initialized = true
             }
@@ -105,16 +109,17 @@ fun PipOverlay(
 
         val pipWidthPx = with(density) { pipState.pipWidth.toPx() }
         val pipHeightPx = with(density) { animatedHeight.toPx() }
-        val maxOffsetX = (maxW - pipWidthPx).coerceAtLeast(0f)
+        val minOffsetX = navBarLeft
+        val maxOffsetX = (maxW - navBarRight - pipWidthPx).coerceAtLeast(minOffsetX)
         val minOffsetY = statusBarPx
-        val maxOffsetY = (maxH - navBarPx - pipHeightPx).coerceAtLeast(minOffsetY)
+        val maxOffsetY = (maxH - navBarBottom - pipHeightPx).coerceAtLeast(minOffsetY)
 
-        LaunchedEffect(maxOffsetX, minOffsetY, maxOffsetY) {
-            pipState.offsetX = pipState.offsetX.coerceIn(0f, maxOffsetX)
+        LaunchedEffect(minOffsetX, maxOffsetX, minOffsetY, maxOffsetY) {
+            pipState.offsetX = pipState.offsetX.coerceIn(minOffsetX, maxOffsetX)
             pipState.offsetY = pipState.offsetY.coerceIn(minOffsetY, maxOffsetY)
         }
 
-        val clampedX = pipState.offsetX.coerceIn(0f, maxOffsetX)
+        val clampedX = pipState.offsetX.coerceIn(minOffsetX, maxOffsetX)
         val clampedY = pipState.offsetY.coerceIn(minOffsetY, maxOffsetY)
 
         PipWindow(
@@ -127,7 +132,7 @@ fun PipOverlay(
             hue = hue,
             scanline = scanline,
             onDragHeader = { dx, dy ->
-                pipState.offsetX = (pipState.offsetX + dx).coerceIn(0f, maxOffsetX)
+                pipState.offsetX = (pipState.offsetX + dx).coerceIn(minOffsetX, maxOffsetX)
                 pipState.offsetY = (pipState.offsetY + dy).coerceIn(minOffsetY, maxOffsetY)
             },
             onResize = { dx, dy ->
@@ -136,8 +141,8 @@ fun PipOverlay(
                     val newHeight = (pipState.pipHeight + dy.toDp()).coerceIn(PipMinHeight, PipMaxHeight)
                     pipState.pipWidth = newWidth
                     pipState.pipHeight = newHeight
-                    pipState.offsetX = pipState.offsetX.coerceIn(0f, (maxW - newWidth.toPx()).coerceAtLeast(0f))
-                    pipState.offsetY = pipState.offsetY.coerceIn(minOffsetY, (maxH - navBarPx - newHeight.toPx()).coerceAtLeast(minOffsetY))
+                    pipState.offsetX = pipState.offsetX.coerceIn(minOffsetX, (maxW - navBarRight - newWidth.toPx()).coerceAtLeast(minOffsetX))
+                    pipState.offsetY = pipState.offsetY.coerceIn(minOffsetY, (maxH - navBarBottom - newHeight.toPx()).coerceAtLeast(minOffsetY))
                 }
             },
             onToggleMinimize = { pipState.isMinimized = !pipState.isMinimized },

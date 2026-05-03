@@ -12,7 +12,6 @@ import org.jetbrains.uast.ULambdaExpression
 import org.jetbrains.uast.USimpleNameReferenceExpression
 import org.jetbrains.uast.UCallExpression
 import org.jetbrains.uast.visitor.AbstractUastVisitor
-import java.util.regex.Pattern
 
 class MyScaffoldPaddingDetector : Detector(), SourceCodeScanner {
     override fun getApplicableMethodNames(): List<String> = listOf("MyScaffold")
@@ -20,6 +19,9 @@ class MyScaffoldPaddingDetector : Detector(), SourceCodeScanner {
     override fun visitMethodCall(context: JavaContext, node: UCallExpression, method: com.intellij.psi.PsiMethod) {
         if (!isTargetMyScaffold(method)) return
 
+        // Only inline lambdas can be analyzed here. Content passed as a function reference or
+        // variable is silently skipped because resolving non-inline callables requires navigating
+        // to their definition, which is beyond the scope of this detector.
         val lambda = node.valueArguments.lastOrNull { it is ULambdaExpression } as? ULambdaExpression ?: return
         if (!isPaddingUsed(lambda)) {
             context.report(
@@ -63,12 +65,27 @@ class MyScaffoldPaddingDetector : Detector(), SourceCodeScanner {
         val explicitByLambdaText = extractExplicitParameterName(lambdaText)
         if (!explicitByLambdaText.isNullOrBlank()) {
             if (explicitByLambdaText == "_") return true
-            val bodyText = lambdaText.substringAfter("->", missingDelimiterValue = "")
-            return containsIdentifier(bodyText, explicitByLambdaText)
+            // Use UAST to detect identifier usage rather than raw text scan to avoid
+            // false negatives from string literals or comments containing the param name.
+            return isNameReferencedInLambda(lambda, explicitByLambdaText)
         }
 
         // Kotlin implicit single-parameter lambda uses `it`.
         return isItReferencedInLambda(lambda)
+    }
+
+    private fun isNameReferencedInLambda(lambda: ULambdaExpression, name: String): Boolean {
+        var found = false
+        lambda.body.accept(object : AbstractUastVisitor() {
+            override fun visitSimpleNameReferenceExpression(node: USimpleNameReferenceExpression): Boolean {
+                if (node.identifier == name) {
+                    found = true
+                    return true
+                }
+                return super.visitSimpleNameReferenceExpression(node)
+            }
+        })
+        return found
     }
 
     private fun isItReferencedInLambda(lambda: ULambdaExpression): Boolean {
@@ -96,11 +113,6 @@ class MyScaffoldPaddingDetector : Detector(), SourceCodeScanner {
         return match.groupValues.getOrNull(1)
     }
 
-
-    private fun containsIdentifier(text: String, identifier: String): Boolean {
-        val pattern = Pattern.compile("(?<![A-Za-z0-9_])${Pattern.quote(identifier)}(?![A-Za-z0-9_])")
-        return pattern.matcher(text).find()
-    }
 
     companion object {
         val ISSUE: Issue = Issue.create(

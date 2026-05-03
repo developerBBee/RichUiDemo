@@ -66,7 +66,6 @@ private val PipMinWidth = 140.dp
 private val PipMinHeight = 100.dp
 private val PipMaxWidth = 340.dp
 private val PipMaxHeight = 300.dp
-private val PipHeaderHeight = 36.dp
 
 private data class FeedItem(val title: String, val subtitle: String, val color: Color)
 

@@ -42,6 +42,16 @@ Single-module Android app (`app/`) using Jetpack Compose with Material3.
 
 **Screens** (`screen/`): Each screen receives only lambda callbacks (no ViewModel), keeping all navigation decisions in `AppNavigation.kt`. `HorizontalScrollCardsScreen` holds local UI state (`selectedCategory`, `pagerState`) directly in the composable.
 
+Current screens:
+- `BorderDemoScreen` — animated rotating gradient border demo
+- `SurfaceDemoScreen` — shimmer sweep surface effect demo
+- `CombinedDemoScreen` — border + surface combined effect demo
+- `HorizontalScrollCardsScreen` — snap pager with category chips
+- `WidgetSamplesScreen` — music player, stats rings, weather, countdown timer widgets
+- `DragDropListScreen` — long-press drag-and-drop reorder list with haptic feedback
+- `BubbleMenuScreen` — expandable bubble menu overlay
+- `PictureInPictureScreen` — draggable & resizable floating PiP overlay; uses `BoxWithConstraints` for bounds clamping, hoists `animateDpAsState` at screen level so boundary checks use the rendered animated height
+
 ## Adding a new demo screen
 
 1. Add a `@Serializable data object XxxRoute : NavKey` in `NavRoutes.kt`

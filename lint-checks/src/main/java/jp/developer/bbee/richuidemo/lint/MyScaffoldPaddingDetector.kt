@@ -40,13 +40,9 @@ class MyScaffoldPaddingDetector : Detector(), SourceCodeScanner {
         if (!sourceSnippet.isNullOrBlank()) {
             val lambdaStart = sourceSnippet.indexOf('{').takeIf { it >= 0 }
             val explicitBySnippet = lambdaStart?.let { extractExplicitParameterName(sourceSnippet.substring(it)) }
-            if (!explicitBySnippet.isNullOrBlank()) {
-                if (explicitBySnippet == "_") return false
-                val bodyText = sourceSnippet.substringAfter("->", missingDelimiterValue = "")
-                // Only treat as positive signal: snippet may be truncated, so a miss here
-                // does not mean the parameter is unused — fall through to UAST checks.
-                if (containsIdentifier(bodyText, explicitBySnippet)) return true
-            }
+            // Only check for intentional ignore — text-based positive checks risk matching
+            // string literals or comments, causing false negatives.
+            if (!explicitBySnippet.isNullOrBlank() && explicitBySnippet == "_") return false
             if (isItReferencedInLambda(lambda)) {
                 return true
             }
@@ -100,6 +96,11 @@ class MyScaffoldPaddingDetector : Detector(), SourceCodeScanner {
     private fun isItReferencedInLambda(lambda: ULambdaExpression): Boolean {
         var found = false
         lambda.body.accept(object : AbstractUastVisitor() {
+            override fun visitLambdaExpression(node: ULambdaExpression): Boolean {
+                // Stop traversal into nested lambdas: `it` there belongs to the inner lambda,
+                // not to the outer scaffold content lambda.
+                return true
+            }
             override fun visitSimpleNameReferenceExpression(node: USimpleNameReferenceExpression): Boolean {
                 if (node.identifier == "it") {
                     found = true

@@ -399,7 +399,7 @@ fun HomeScreen(
             item {
                 DemoSectionCard(
                     title = "Hide Nav on Scroll",
-                    description = "スクロール方向で消えるボトムナビゲーション — slide from right",
+                    description = "Bottom nav hides on scroll-down · slides back up on scroll-up",
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 Card(

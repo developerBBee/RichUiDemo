@@ -31,6 +31,7 @@ import jp.developer.bbee.richuidemo.screen.BorderDemoScreen
 import jp.developer.bbee.richuidemo.screen.BubbleMenuScreen
 import jp.developer.bbee.richuidemo.screen.CombinedDemoScreen
 import jp.developer.bbee.richuidemo.screen.DragDropListScreen
+import jp.developer.bbee.richuidemo.screen.HideNavOnScrollScreen
 import jp.developer.bbee.richuidemo.screen.HomeScreen
 import jp.developer.bbee.richuidemo.screen.HorizontalScrollCardsScreen
 import jp.developer.bbee.richuidemo.screen.PictureInPictureScreen
@@ -85,6 +86,7 @@ fun AppNavigation() {
                             onNavigateToDragDropList = { backStack.add(DragDropListRoute) },
                             onNavigateToBubbleMenu = { backStack.add(BubbleMenuRoute) },
                             onNavigateToPictureInPicture = { backStack.add(PictureInPictureRoute) },
+                            onNavigateToHideNavOnScroll = { backStack.add(HideNavOnScrollRoute) },
                         )
                     }
 
@@ -158,6 +160,10 @@ fun AppNavigation() {
                             pipState = pipState,
                             onBack = { backStack.removeLastOrNull() },
                         )
+                    }
+
+                    entry<HideNavOnScrollRoute>(metadata = horizontalSlideMetadata) {
+                        HideNavOnScrollScreen(onBack = { backStack.removeLastOrNull() })
                     }
                 },
             )

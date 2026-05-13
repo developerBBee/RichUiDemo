@@ -29,3 +29,6 @@ data object BubbleMenuRoute : NavKey
 
 @Serializable
 data object PictureInPictureRoute : NavKey
+
+@Serializable
+data object HideNavOnScrollRoute : NavKey

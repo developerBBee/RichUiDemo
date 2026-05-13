@@ -1,6 +1,7 @@
 package jp.developer.bbee.richuidemo.screen
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -45,41 +46,49 @@ fun WidgetSamplesScreen(onBack: () -> Unit) {
             verticalArrangement = Arrangement.spacedBy(24.dp),
         ) {
             item {
-                DemoSectionLabel(
-                    title = "Music Player",
-                    description = "Rotating disc · sine-wave waveform · playback controls",
-                )
-                MusicPlayerWidget(modifier = Modifier.fillMaxWidth())
+                Column {
+                    DemoSectionLabel(
+                        title = "Music Player",
+                        description = "Rotating disc · sine-wave waveform · playback controls",
+                    )
+                    MusicPlayerWidget(modifier = Modifier.fillMaxWidth())
+                }
             }
 
             item { HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant) }
 
             item {
-                DemoSectionLabel(
-                    title = "System Stats",
-                    description = "Animated arc rings · count-up from zero on enter",
-                )
-                StatsRingWidget(modifier = Modifier.fillMaxWidth())
+                Column {
+                    DemoSectionLabel(
+                        title = "System Stats",
+                        description = "Animated arc rings · count-up from zero on enter",
+                    )
+                    StatsRingWidget(modifier = Modifier.fillMaxWidth())
+                }
             }
 
             item { HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant) }
 
             item {
-                DemoSectionLabel(
-                    title = "Weather Card",
-                    description = "Animated gradient sky · pulsing sun · frosted details row",
-                )
-                WeatherWidget(modifier = Modifier.fillMaxWidth())
+                Column {
+                    DemoSectionLabel(
+                        title = "Weather Card",
+                        description = "Animated gradient sky · pulsing sun · frosted details row",
+                    )
+                    WeatherWidget(modifier = Modifier.fillMaxWidth())
+                }
             }
 
             item { HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant) }
 
             item {
-                DemoSectionLabel(
-                    title = "Countdown Timer",
-                    description = "Arc progress · green→orange→red shift · pulse when low",
-                )
-                CountdownTimerWidget(modifier = Modifier.fillMaxWidth())
+                Column {
+                    DemoSectionLabel(
+                        title = "Countdown Timer",
+                        description = "Arc progress · green→orange→red shift · pulse when low",
+                    )
+                    CountdownTimerWidget(modifier = Modifier.fillMaxWidth())
+                }
             }
         }
     }

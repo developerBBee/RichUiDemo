@@ -76,7 +76,7 @@ fun SwipeableDualLayoutScreen(onBack: () -> Unit) {
         val expandedFraction = 0.72f
         val screenHeight = maxHeight
         val expandedHeight = screenHeight * expandedFraction
-        val maxDragPx = with(density) { (expandedHeight - peekHeight).toPx() }
+        val maxDragPx = with(density) { (expandedHeight - peekHeight).toPx() }.coerceAtLeast(0f)
 
         SideEffect {
             state.updateAnchors(

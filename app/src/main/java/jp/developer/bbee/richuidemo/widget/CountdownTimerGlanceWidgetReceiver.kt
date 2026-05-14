@@ -4,6 +4,8 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.os.Build
+import android.util.Log
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.glance.appwidget.GlanceAppWidgetReceiver
@@ -16,6 +18,7 @@ class CountdownTimerGlanceWidgetReceiver : GlanceAppWidgetReceiver() {
     override val glanceAppWidget: GlanceAppWidget = CountdownTimerGlanceWidget()
 
     override fun onReceive(context: Context, intent: Intent) {
+        Log.d("CountdownTimerWidget", "Received intent: ${intent.action}")
         super.onReceive(context, intent)
         if (intent.action == TICK_ACTION) {
             val pendingResult = goAsync()
@@ -52,20 +55,29 @@ class CountdownTimerGlanceWidgetReceiver : GlanceAppWidgetReceiver() {
         // Update all widget instances
         val ids = GlanceAppWidgetManager(context)
             .getGlanceIds(CountdownTimerGlanceWidget::class.java)
+        Log.d("CountdownTimerWidget", "Tick: remainingMs=$remainingMs, updating ${ids.size} widgets")
         ids.forEach { id -> glanceAppWidget.update(context, id) }
+        Log.d("CountdownTimerWidget", "Tick handling complete")
     }
 
     companion object {
         const val TICK_ACTION = "jp.developer.bbee.richuidemo.widget.TIMER_TICK"
         private const val TICK_REQUEST_CODE = 9001
+        // Android 12+ throttles background exact alarms to ~5s; match that to avoid silent deferral
+        const val TICK_INTERVAL_MS = 5_000L
 
         fun scheduleTick(context: Context) {
             val am = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-            am.setExact(
-                AlarmManager.RTC,
-                System.currentTimeMillis() + 1_000L,
-                buildTickIntent(context),
-            )
+            val triggerAt = System.currentTimeMillis() + TICK_INTERVAL_MS
+            val pi = buildTickIntent(context)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !am.canScheduleExactAlarms()) {
+                // Exact alarm permission not granted; use inexact alarm as fallback
+                Log.d("CountdownTimerWidget", "Scheduling inexact alarm for tick at $triggerAt")
+                am.set(AlarmManager.RTC, triggerAt, pi)
+            } else {
+                Log.d("CountdownTimerWidget", "Scheduling exact alarm for tick at $triggerAt")
+                am.setExact(AlarmManager.RTC, triggerAt, pi)
+            }
         }
 
         fun cancelTick(context: Context) {

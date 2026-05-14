@@ -2,6 +2,8 @@ package jp.developer.bbee.richuidemo.widget
 
 import android.content.Context
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -31,6 +33,9 @@ import androidx.glance.text.Text
 import androidx.glance.text.TextAlign
 import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flow
 
 private fun Color.asColorProvider(): ColorProvider = object : ColorProvider {
     override fun getColor(context: Context): Color = this@asColorProvider
@@ -62,14 +67,24 @@ class CountdownTimerGlanceWidget : GlanceAppWidget() {
     }
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
-        val remainingMs = getRemainingMs(context)
-        val running = isRunning(context)
+        // 1秒ごとに残り時間を emit する Flow。
+        // targetEndTime からの絶対時刻計算なのでドリフトなし。
+        // プロセスが落ちて5秒アラームで再起動したとき provideGlance が再実行されズレを補正する。
+        val timerFlow = flow {
+            while (true) {
+                emit(getRemainingMs(context) to isRunning(context))
+                delay(1_000L)
+            }
+        }.distinctUntilChanged()
 
         provideContent {
+            val state by timerFlow.collectAsState(
+                initial = getRemainingMs(context) to isRunning(context),
+            )
             GlanceTheme {
                 CountdownTimerWidgetContent(
-                    remainingMs = remainingMs,
-                    isRunning = running,
+                    remainingMs = state.first,
+                    isRunning = state.second,
                     totalSeconds = DEFAULT_TOTAL_SECONDS,
                 )
             }

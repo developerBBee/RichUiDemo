@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.glance.GlanceId
 import androidx.glance.action.ActionParameters
 import androidx.glance.appwidget.action.ActionCallback
+import androidx.core.content.edit
 
 class StartPauseTimerAction : ActionCallback {
     override suspend fun onAction(
@@ -21,17 +22,17 @@ class StartPauseTimerAction : ActionCallback {
         if (remainingMs <= 0L) return
 
         if (isRunning) {
-            prefs.edit()
-                .putBoolean(CountdownTimerGlanceWidget.KEY_IS_RUNNING, false)
-                .putLong(CountdownTimerGlanceWidget.KEY_REMAINING_MS, remainingMs)
-                .apply()
+            prefs.edit {
+                putBoolean(CountdownTimerGlanceWidget.KEY_IS_RUNNING, false)
+                    .putLong(CountdownTimerGlanceWidget.KEY_REMAINING_MS, remainingMs)
+            }
             CountdownTimerGlanceWidgetReceiver.cancelTick(context)
         } else {
             val targetEndTime = System.currentTimeMillis() + remainingMs
-            prefs.edit()
-                .putBoolean(CountdownTimerGlanceWidget.KEY_IS_RUNNING, true)
-                .putLong(CountdownTimerGlanceWidget.KEY_TARGET_END_TIME, targetEndTime)
-                .apply()
+            prefs.edit {
+                putBoolean(CountdownTimerGlanceWidget.KEY_IS_RUNNING, true)
+                    .putLong(CountdownTimerGlanceWidget.KEY_TARGET_END_TIME, targetEndTime)
+            }
             CountdownTimerGlanceWidgetReceiver.scheduleTick(context)
         }
 

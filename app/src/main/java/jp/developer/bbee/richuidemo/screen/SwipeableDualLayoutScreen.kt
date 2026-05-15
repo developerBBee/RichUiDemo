@@ -58,7 +58,7 @@ fun SwipeableDualLayoutScreen(onBack: () -> Unit) {
     val density = LocalDensity.current
     var bookmarked by remember { mutableStateOf(false) }
 
-    val state = remember {
+    val state = remember(density) {
         AnchoredDraggableState(
             initialValue = PanelAnchor.COLLAPSED,
             positionalThreshold = { d -> d * 0.5f },
@@ -75,7 +75,7 @@ fun SwipeableDualLayoutScreen(onBack: () -> Unit) {
         val peekHeight = 120.dp
         val expandedFraction = 0.72f
         val screenHeight = maxHeight
-        val expandedHeight = screenHeight * expandedFraction
+        val expandedHeight = (screenHeight * expandedFraction).coerceAtLeast(peekHeight)
         val maxDragPx = with(density) { (expandedHeight - peekHeight).toPx() }.coerceAtLeast(0f)
 
         SideEffect {

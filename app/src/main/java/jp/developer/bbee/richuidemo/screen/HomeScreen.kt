@@ -48,6 +48,7 @@ fun HomeScreen(
     onNavigateToBubbleMenu: () -> Unit,
     onNavigateToPictureInPicture: () -> Unit,
     onNavigateToHideNavOnScroll: () -> Unit,
+    onNavigateToDateRangePicker: () -> Unit,
 ) {
     Scaffold(
         topBar = {
@@ -427,6 +428,46 @@ fun HomeScreen(
                             text = "Tap to explore  →",
                             style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onSecondaryContainer,
+                        )
+                    }
+                }
+            }
+
+            item {
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+            }
+
+            item {
+                DemoSectionCard(
+                    title = "Date Range Picker",
+                    description = "カレンダーで from / to 日付を選択 · 範囲ハイライト",
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = onNavigateToDateRangePicker,
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    ),
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(96.dp)
+                            .padding(horizontal = 20.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                    ) {
+                        Text(
+                            text = "📅  →  📅",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        )
+                        Text(
+                            text = "Tap to explore  →",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
                         )
                     }
                 }

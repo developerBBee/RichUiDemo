@@ -3,6 +3,7 @@ package jp.developer.bbee.richuidemo.widget
 import android.content.Context
 import androidx.glance.GlanceId
 import androidx.glance.action.ActionParameters
+import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.glance.appwidget.action.ActionCallback
 
 class ResetTimerAction : ActionCallback {
@@ -24,6 +25,9 @@ class ResetTimerAction : ActionCallback {
             .apply()
 
         CountdownTimerGlanceWidgetReceiver.cancelTick(context)
-        CountdownTimerGlanceWidget().update(context, glanceId)
+        val widget = CountdownTimerGlanceWidget()
+        GlanceAppWidgetManager(context)
+            .getGlanceIds(CountdownTimerGlanceWidget::class.java)
+            .forEach { id -> widget.update(context, id) }
     }
 }

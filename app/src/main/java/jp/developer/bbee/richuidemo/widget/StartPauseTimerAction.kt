@@ -1,10 +1,11 @@
 package jp.developer.bbee.richuidemo.widget
 
 import android.content.Context
+import androidx.core.content.edit
 import androidx.glance.GlanceId
 import androidx.glance.action.ActionParameters
+import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.glance.appwidget.action.ActionCallback
-import androidx.core.content.edit
 
 class StartPauseTimerAction : ActionCallback {
     override suspend fun onAction(
@@ -36,6 +37,9 @@ class StartPauseTimerAction : ActionCallback {
             CountdownTimerGlanceWidgetReceiver.scheduleTick(context)
         }
 
-        CountdownTimerGlanceWidget().update(context, glanceId)
+        val widget = CountdownTimerGlanceWidget()
+        GlanceAppWidgetManager(context)
+            .getGlanceIds(CountdownTimerGlanceWidget::class.java)
+            .forEach { id -> widget.update(context, id) }
     }
 }

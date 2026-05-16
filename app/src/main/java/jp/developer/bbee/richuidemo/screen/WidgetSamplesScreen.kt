@@ -1,6 +1,7 @@
 package jp.developer.bbee.richuidemo.screen
 
 import android.os.Build
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -93,10 +94,13 @@ fun WidgetSamplesScreen(onBack: () -> Unit) {
                         label = "Weather をホーム画面に追加",
                         onClick = {
                             scope.launch {
-                                GlanceAppWidgetManager(context).requestPinGlanceAppWidget(
+                                val pinned = GlanceAppWidgetManager(context).requestPinGlanceAppWidget(
                                     receiver = WeatherGlanceWidgetReceiver::class.java,
                                     preview = WeatherGlanceWidget(),
                                 )
+                                if (!pinned) {
+                                    Toast.makeText(context, "このランチャーはウィジェットの追加に対応していません", Toast.LENGTH_SHORT).show()
+                                }
                             }
                         },
                     )
@@ -116,10 +120,13 @@ fun WidgetSamplesScreen(onBack: () -> Unit) {
                         label = "Timer をホーム画面に追加",
                         onClick = {
                             scope.launch {
-                                GlanceAppWidgetManager(context).requestPinGlanceAppWidget(
+                                val pinned = GlanceAppWidgetManager(context).requestPinGlanceAppWidget(
                                     receiver = CountdownTimerGlanceWidgetReceiver::class.java,
                                     preview = CountdownTimerGlanceWidget(),
                                 )
+                                if (!pinned) {
+                                    Toast.makeText(context, "このランチャーはウィジェットの追加に対応していません", Toast.LENGTH_SHORT).show()
+                                }
                             }
                         },
                     )

@@ -98,8 +98,8 @@ private fun CountdownTimerWidgetContent(
     isRunning: Boolean,
     totalSeconds: Int,
 ) {
+    val isDone = remainingMs <= 0L
     val remainingSeconds = (remainingMs / 1000L).toInt()
-    val isDone = remainingSeconds == 0
     val progress = if (totalSeconds > 0) remainingSeconds.toFloat() / totalSeconds else 0f
     val percent = (progress * 100).toInt()
 

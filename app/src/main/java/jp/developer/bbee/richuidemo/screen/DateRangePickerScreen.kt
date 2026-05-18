@@ -530,12 +530,16 @@ private fun DayCell(
     }
 }
 
+private fun julianDayNumber(date: CalendarDate): Int {
+    val a = (14 - date.month) / 12
+    val y = date.year + 4800 - a
+    val m = date.month + 12 * a - 3
+    return date.day + (153 * m + 2) / 5 + 365 * y + y / 4 - y / 100 + y / 400 - 32045
+}
+
 @Composable
 private fun ConfirmedRangeCard(from: CalendarDate, to: CalendarDate) {
-    val cal1 = Calendar.getInstance().apply { set(from.year, from.month - 1, from.day) }
-    val cal2 = Calendar.getInstance().apply { set(to.year, to.month - 1, to.day) }
-    val diffMs = cal2.timeInMillis - cal1.timeInMillis
-    val days = (diffMs / (1000 * 60 * 60 * 24)).toInt() + 1
+    val days = julianDayNumber(to) - julianDayNumber(from) + 1
 
     Card(
         modifier = Modifier.fillMaxWidth(),

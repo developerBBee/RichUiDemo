@@ -48,6 +48,7 @@ fun HomeScreen(
     onNavigateToBubbleMenu: () -> Unit,
     onNavigateToPictureInPicture: () -> Unit,
     onNavigateToHideNavOnScroll: () -> Unit,
+    onNavigateToSwipeableDualLayout: () -> Unit,
 ) {
     Scaffold(
         topBar = {
@@ -427,6 +428,46 @@ fun HomeScreen(
                             text = "Tap to explore  →",
                             style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onSecondaryContainer,
+                        )
+                    }
+                }
+            }
+
+            item {
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+            }
+
+            item {
+                DemoSectionCard(
+                    title = "Swipeable Dual Layout",
+                    description = "上スワイプでパネルが展開 · ヒーロー画面が縮小 · アンカードラッグ",
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = onNavigateToSwipeableDualLayout,
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                    ),
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(96.dp)
+                            .padding(horizontal = 20.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                    ) {
+                        Text(
+                            text = "🗼  ↑  📋",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onTertiaryContainer,
+                        )
+                        Text(
+                            text = "Tap to explore  →",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onTertiaryContainer,
                         )
                     }
                 }

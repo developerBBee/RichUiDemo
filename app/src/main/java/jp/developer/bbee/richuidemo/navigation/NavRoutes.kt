@@ -32,3 +32,6 @@ data object PictureInPictureRoute : NavKey
 
 @Serializable
 data object HideNavOnScrollRoute : NavKey
+
+@Serializable
+data object SwipeableDualLayoutRoute : NavKey

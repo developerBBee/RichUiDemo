@@ -237,7 +237,7 @@ fun SwipeableDualLayoutScreen(onBack: () -> Unit) {
                 .height(expandedHeight)
                 .align(Alignment.BottomCenter)
                 .offset { IntOffset(0, (maxDragPx - rawOffset).roundToInt()) }
-                .anchoredDraggable(state, Orientation.Vertical, reverseDirection = true)
+                .anchoredDraggable(state = state, orientation = Orientation.Vertical, reverseDirection = true)
                 .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
                 .background(MaterialTheme.colorScheme.surface),
         ) {

@@ -49,6 +49,7 @@ fun HomeScreen(
     onNavigateToPictureInPicture: () -> Unit,
     onNavigateToHideNavOnScroll: () -> Unit,
     onNavigateToSwipeableDualLayout: () -> Unit,
+    onNavigateToDraggableImageGrid: () -> Unit,
 ) {
     Scaffold(
         topBar = {
@@ -421,6 +422,46 @@ fun HomeScreen(
                     ) {
                         Text(
                             text = "⬇  🔲  ⬆",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSecondaryContainer,
+                        )
+                        Text(
+                            text = "Tap to explore  →",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSecondaryContainer,
+                        )
+                    }
+                }
+            }
+
+            item {
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+            }
+
+            item {
+                DemoSectionCard(
+                    title = "Draggable Image Grid",
+                    description = "混合span (1×1·1×2·2×1·2×2) · Long-press reorder · Reorderable library",
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = onNavigateToDraggableImageGrid,
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    ),
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(96.dp)
+                            .padding(horizontal = 20.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                    ) {
+                        Text(
+                            text = "▪ ▪▪ ▪ ▪▪▪",
                             style = MaterialTheme.typography.titleMedium,
                             color = MaterialTheme.colorScheme.onSecondaryContainer,
                         )

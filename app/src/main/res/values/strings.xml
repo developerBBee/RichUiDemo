@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">RichUiDemo</string>
+    <string name="widget_weather_description">Weather widget showing temperature and conditions</string>
+    <string name="widget_countdown_description">Countdown timer widget with Start/Pause and Reset controls</string>
 </resources>

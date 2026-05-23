@@ -35,3 +35,6 @@ data object HideNavOnScrollRoute : NavKey
 
 @Serializable
 data object SwipeableDualLayoutRoute : NavKey
+
+@Serializable
+data object DraggableImageGridRoute : NavKey

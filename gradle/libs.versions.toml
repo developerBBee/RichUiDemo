@@ -12,6 +12,7 @@ navigation3 = "1.0.0"
 kotlinxSerializationJson = "1.8.1"
 androidLint = "32.1.1"
 corePip = "1.0.0-alpha02"
+reorderable = "3.1.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -35,6 +36,7 @@ kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-
 android-lint-api = { group = "com.android.tools.lint", name = "lint-api", version.ref = "androidLint" }
 android-lint-checks = { group = "com.android.tools.lint", name = "lint-checks", version.ref = "androidLint" }
 androidx-core-pip = { group = "androidx.core", name = "core-pip", version.ref = "corePip" }
+reorderable = { module = "sh.calvin.reorderable:reorderable", version.ref = "reorderable" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

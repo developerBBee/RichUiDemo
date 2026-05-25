@@ -35,6 +35,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -72,6 +73,11 @@ fun ImageSelectionOverlayScreen(onBack: () -> Unit) {
     var selection by remember { mutableStateOf<Rect?>(null) }
     var canvasSizePx by remember { mutableStateOf(IntSize.Zero) }
     val imageBitmap = remember { createSampleBitmap().asImageBitmap() }
+
+    // Canvas pixel coords become stale on size changes (e.g. rotation); clear selection.
+    LaunchedEffect(canvasSizePx) {
+        selection = null
+    }
 
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -343,39 +349,32 @@ private fun saveToStorage(
     val filename = "selection_${System.currentTimeMillis()}.png"
 
     return try {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            val values = ContentValues().apply {
-                put(MediaStore.Images.Media.DISPLAY_NAME, filename)
-                put(MediaStore.Images.Media.MIME_TYPE, "image/png")
+        val values = ContentValues().apply {
+            put(MediaStore.Images.Media.DISPLAY_NAME, filename)
+            put(MediaStore.Images.Media.MIME_TYPE, "image/png")
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 put(
                     MediaStore.Images.Media.RELATIVE_PATH,
                     "${Environment.DIRECTORY_PICTURES}/RichUiDemo",
                 )
             }
-            val uri = context.contentResolver.insert(
-                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                values,
-            ) ?: return "エラー: URI の取得に失敗しました"
-            context.contentResolver.openOutputStream(uri)?.use { out ->
-                cropped.compress(Bitmap.CompressFormat.PNG, 100, out)
-            }
-        } else {
-            val dir = java.io.File(
-                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
-                "RichUiDemo",
-            )
-            dir.mkdirs()
-            val file = java.io.File(dir, filename)
-            file.outputStream().use { out ->
-                cropped.compress(Bitmap.CompressFormat.PNG, 100, out)
-            }
-            android.media.MediaScannerConnection.scanFile(
-                context,
-                arrayOf(file.absolutePath),
-                null,
-                null,
-            )
         }
+        val uri = context.contentResolver.insert(
+            MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+            values,
+        ) ?: return "エラー: URI の取得に失敗しました"
+
+        val stream = context.contentResolver.openOutputStream(uri)
+        if (stream == null) {
+            context.contentResolver.delete(uri, null, null)
+            return "エラー: OutputStream を開けませんでした"
+        }
+        val ok = stream.use { out -> cropped.compress(Bitmap.CompressFormat.PNG, 100, out) }
+        if (!ok) {
+            context.contentResolver.delete(uri, null, null)
+            return "エラー: 画像の書き込みに失敗しました"
+        }
+
         "保存しました: Pictures/RichUiDemo/$filename"
     } catch (e: Exception) {
         "保存に失敗しました: ${e.message}"

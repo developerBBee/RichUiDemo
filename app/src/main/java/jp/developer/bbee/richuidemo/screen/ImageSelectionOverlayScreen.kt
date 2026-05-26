@@ -357,6 +357,18 @@ private fun saveToStorage(
                     MediaStore.Images.Media.RELATIVE_PATH,
                     "${Environment.DIRECTORY_PICTURES}/RichUiDemo",
                 )
+            } else {
+                // On pre-Q, use DATA to pin the save location to Pictures/RichUiDemo/
+                @Suppress("DEPRECATION")
+                val dir = java.io.File(
+                    Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
+                    "RichUiDemo",
+                )
+                if (!dir.exists() && !dir.mkdirs()) {
+                    return "エラー: ディレクトリの作成に失敗しました"
+                }
+                @Suppress("DEPRECATION")
+                put(MediaStore.Images.Media.DATA, java.io.File(dir, filename).absolutePath)
             }
         }
         val uri = context.contentResolver.insert(

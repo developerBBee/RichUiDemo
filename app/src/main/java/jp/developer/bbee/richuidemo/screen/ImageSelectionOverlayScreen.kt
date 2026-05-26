@@ -3,20 +3,22 @@ package jp.developer.bbee.richuidemo.screen
 import android.content.ContentValues
 import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.LinearGradient
-import android.graphics.Paint
-import android.graphics.Path
-import android.graphics.Shader
+import android.graphics.BitmapFactory
+import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -25,11 +27,15 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AddPhotoAlternate
 import androidx.compose.material.icons.filled.Save
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -41,6 +47,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
@@ -51,8 +58,6 @@ import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.foundation.gestures.awaitEachGesture
-import androidx.compose.ui.input.pointer.awaitFirstDown
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
@@ -72,20 +77,44 @@ fun ImageSelectionOverlayScreen(onBack: () -> Unit) {
     val scope = rememberCoroutineScope()
     var selection by remember { mutableStateOf<Rect?>(null) }
     var canvasSizePx by remember { mutableStateOf(IntSize.Zero) }
-    val imageBitmap = remember { createSampleBitmap().asImageBitmap() }
+    var imageBitmap by remember { mutableStateOf<ImageBitmap?>(null) }
 
     // Canvas pixel coords become stale on size changes (e.g. rotation); clear selection.
     LaunchedEffect(canvasSizePx) {
         selection = null
     }
 
+    val photoPickerLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.PickVisualMedia()
+    ) { uri ->
+        uri ?: return@rememberLauncherForActivityResult
+        scope.launch(Dispatchers.IO) {
+            val bitmap = loadBitmapFromUri(context, uri)
+            withContext(Dispatchers.Main) {
+                if (bitmap != null) {
+                    imageBitmap = bitmap.asImageBitmap()
+                    selection = null
+                } else {
+                    Toast.makeText(context, "画像の読み込みに失敗しました", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
+    fun launchPicker() {
+        photoPickerLauncher.launch(
+            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+        )
+    }
+
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { granted ->
         if (granted) {
+            val img = imageBitmap ?: return@rememberLauncherForActivityResult
             val sel = selection ?: return@rememberLauncherForActivityResult
             scope.launch(Dispatchers.IO) {
-                val msg = saveToStorage(context, imageBitmap, sel, canvasSizePx)
+                val msg = saveToStorage(context, img, sel, canvasSizePx)
                 withContext(Dispatchers.Main) {
                     Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
                 }
@@ -96,12 +125,13 @@ fun ImageSelectionOverlayScreen(onBack: () -> Unit) {
     }
 
     fun onSave() {
+        val img = imageBitmap ?: return
         val sel = selection ?: return
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
             permissionLauncher.launch(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
         } else {
             scope.launch(Dispatchers.IO) {
-                val msg = saveToStorage(context, imageBitmap, sel, canvasSizePx)
+                val msg = saveToStorage(context, img, sel, canvasSizePx)
                 withContext(Dispatchers.Main) {
                     Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
                 }
@@ -114,6 +144,11 @@ fun ImageSelectionOverlayScreen(onBack: () -> Unit) {
             TopAppBar(
                 title = { Text("Image Selection Overlay") },
                 navigationIcon = { BackNavigationIcon(onClick = onBack) },
+                actions = {
+                    IconButton(onClick = ::launchPicker) {
+                        Icon(Icons.Default.AddPhotoAlternate, contentDescription = "画像を選択")
+                    }
+                },
             )
         },
         floatingActionButton = {
@@ -130,109 +165,137 @@ fun ImageSelectionOverlayScreen(onBack: () -> Unit) {
             }
         },
     ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding),
-        ) {
-            Text(
-                text = if (selection == null) {
-                    "画像上をドラッグして選択範囲を作成"
-                } else {
-                    "四隅のハンドルをドラッグして調整 · 枠外タップで解除"
-                },
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-            )
-
-            Box(
+        val img = imageBitmap
+        if (img == null) {
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(4f / 3f)
-                    .onSizeChanged { canvasSizePx = it },
+                    .fillMaxSize()
+                    .padding(innerPadding),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Canvas(modifier = Modifier.fillMaxSize()) {
-                    drawImage(
-                        image = imageBitmap,
-                        dstSize = IntSize(size.width.toInt(), size.height.toInt()),
-                    )
+                Icon(
+                    imageVector = Icons.Default.AddPhotoAlternate,
+                    contentDescription = null,
+                    modifier = Modifier.size(72.dp),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "画像を選択してください",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(onClick = ::launchPicker) {
+                    Text("フォトピッカーを開く")
                 }
+            }
+        } else {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
+            ) {
+                Text(
+                    text = if (selection == null) {
+                        "画像上をドラッグして選択範囲を作成"
+                    } else {
+                        "四隅のハンドルをドラッグして調整 · 枠外タップで解除"
+                    },
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                )
 
-                val handleRadiusDp = 14.dp
-                Canvas(
+                Box(
                     modifier = Modifier
-                        .fillMaxSize()
-                        .pointerInput(Unit) {
-                            val handleRadiusPx = handleRadiusDp.toPx()
-                            val touchTarget = handleRadiusPx * 2f
+                        .fillMaxWidth()
+                        .aspectRatio(img.width.toFloat() / img.height.toFloat())
+                        .onSizeChanged { canvasSizePx = it },
+                ) {
+                    Canvas(modifier = Modifier.fillMaxSize()) {
+                        drawImage(
+                            image = img,
+                            dstSize = IntSize(size.width.toInt(), size.height.toInt()),
+                        )
+                    }
 
-                            awaitEachGesture {
-                                val down = awaitFirstDown(requireUnconsumed = false)
-                                val downPos = down.position
-                                val sel = selection
-                                val cornerHit = sel?.let {
-                                    findNearCorner(it, downPos, touchTarget)
-                                }
+                    val handleRadiusDp = 14.dp
+                    Canvas(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .pointerInput(Unit) {
+                                val handleRadiusPx = handleRadiusDp.toPx()
+                                val touchTarget = handleRadiusPx * 2f
 
-                                if (cornerHit != null) {
-                                    down.consume()
-                                    while (true) {
-                                        val event = awaitPointerEvent()
-                                        val change = event.changes.firstOrNull {
-                                            it.id == down.id
-                                        } ?: break
-                                        if (!change.pressed) break
-                                        val current = selection ?: break
-                                        selection = current.resizeCorner(
-                                            cornerHit,
-                                            change.position.coerceInSize(size),
-                                        )
-                                        change.consume()
+                                awaitEachGesture {
+                                    val down = awaitFirstDown(requireUnconsumed = false)
+                                    val downPos = down.position
+                                    val sel = selection
+                                    val cornerHit = sel?.let {
+                                        findNearCorner(it, downPos, touchTarget)
                                     }
-                                } else {
-                                    var dragging = false
-                                    while (true) {
-                                        val event = awaitPointerEvent()
-                                        val change = event.changes.firstOrNull {
-                                            it.id == down.id
-                                        } ?: break
-                                        if (!change.pressed) break
-                                        val dist = (change.position - downPos).getDistance()
-                                        if (!dragging && dist > viewConfiguration.touchSlop) {
-                                            dragging = true
-                                        }
-                                        if (dragging) {
-                                            selection = normalizeRect(
-                                                downPos.coerceInSize(size),
+
+                                    if (cornerHit != null) {
+                                        down.consume()
+                                        while (true) {
+                                            val event = awaitPointerEvent()
+                                            val change = event.changes.firstOrNull {
+                                                it.id == down.id
+                                            } ?: break
+                                            if (!change.pressed) break
+                                            val current = selection ?: break
+                                            selection = current.resizeCorner(
+                                                cornerHit,
                                                 change.position.coerceInSize(size),
                                             )
                                             change.consume()
                                         }
+                                    } else {
+                                        var dragging = false
+                                        while (true) {
+                                            val event = awaitPointerEvent()
+                                            val change = event.changes.firstOrNull {
+                                                it.id == down.id
+                                            } ?: break
+                                            if (!change.pressed) break
+                                            val dist = (change.position - downPos).getDistance()
+                                            if (!dragging && dist > viewConfiguration.touchSlop) {
+                                                dragging = true
+                                            }
+                                            if (dragging) {
+                                                selection = normalizeRect(
+                                                    downPos.coerceInSize(size),
+                                                    change.position.coerceInSize(size),
+                                                )
+                                                change.consume()
+                                            }
+                                        }
+                                        if (!dragging) selection = null
                                     }
-                                    if (!dragging) selection = null
                                 }
-                            }
-                        },
-                ) {
-                    val sel = selection
-                    if (sel != null) {
-                        drawSelectionOverlay(sel, handleRadiusDp.toPx())
+                            },
+                    ) {
+                        val sel = selection
+                        if (sel != null) {
+                            drawSelectionOverlay(sel, handleRadiusDp.toPx())
+                        }
                     }
                 }
-            }
 
-            val sel = selection
-            if (sel != null && canvasSizePx.width > 0) {
-                val scaleX = imageBitmap.width.toFloat() / canvasSizePx.width
-                val scaleY = imageBitmap.height.toFloat() / canvasSizePx.height
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "選択サイズ: ${(sel.width * scaleX).toInt()} × ${(sel.height * scaleY).toInt()} px",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                )
+                val sel = selection
+                if (sel != null && canvasSizePx.width > 0) {
+                    val scaleX = img.width.toFloat() / canvasSizePx.width
+                    val scaleY = img.height.toFloat() / canvasSizePx.height
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "選択サイズ: ${(sel.width * scaleX).toInt()} × ${(sel.height * scaleY).toInt()} px",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                    )
+                }
             }
         }
     }
@@ -393,141 +456,26 @@ private fun saveToStorage(
     }
 }
 
-private fun createSampleBitmap(): Bitmap {
-    val w = 1200
-    val h = 900
-    val bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
-    val canvas = android.graphics.Canvas(bmp)
-    val paint = Paint(Paint.ANTI_ALIAS_FLAG)
-
-    // Sky gradient
-    paint.shader = LinearGradient(
-        0f, 0f, 0f, h * 0.58f,
-        intArrayOf(0xFF4FC3F7.toInt(), 0xFFB3E5FC.toInt(), 0xFFE1F5FE.toInt()),
-        null,
-        Shader.TileMode.CLAMP,
-    )
-    canvas.drawRect(0f, 0f, w.toFloat(), h * 0.58f, paint)
-    paint.shader = null
-
-    // Ground gradient
-    paint.shader = LinearGradient(
-        0f, h * 0.58f, 0f, h.toFloat(),
-        intArrayOf(0xFF66BB6A.toInt(), 0xFF388E3C.toInt()),
-        null,
-        Shader.TileMode.CLAMP,
-    )
-    canvas.drawRect(0f, h * 0.58f, w.toFloat(), h.toFloat(), paint)
-    paint.shader = null
-
-    // Sun glow
-    paint.color = 0x33FFD700.toInt()
-    canvas.drawCircle(w * 0.82f, h * 0.18f, 110f, paint)
-    // Sun core
-    paint.color = 0xFFFFD600.toInt()
-    canvas.drawCircle(w * 0.82f, h * 0.18f, 72f, paint)
-
-    // Mountains (back layer — lighter)
-    paint.color = 0xFF90A4AE.toInt()
-    val backMtn = Path().apply {
-        moveTo(0f, h * 0.58f)
-        lineTo(w * 0.12f, h * 0.32f)
-        lineTo(w * 0.28f, h * 0.50f)
-        lineTo(w * 0.42f, h * 0.28f)
-        lineTo(w * 0.58f, h * 0.46f)
-        lineTo(w * 0.70f, h * 0.30f)
-        lineTo(w * 0.85f, h * 0.50f)
-        lineTo(w.toFloat(), h * 0.38f)
-        lineTo(w.toFloat(), h * 0.58f)
-        close()
-    }
-    canvas.drawPath(backMtn, paint)
-
-    // Mountains (front layer — darker)
-    paint.color = 0xFF546E7A.toInt()
-    val frontMtn = Path().apply {
-        moveTo(0f, h * 0.58f)
-        lineTo(w * 0.08f, h * 0.42f)
-        lineTo(w * 0.22f, h * 0.55f)
-        lineTo(w * 0.35f, h * 0.36f)
-        lineTo(w * 0.50f, h * 0.52f)
-        lineTo(w * 0.63f, h * 0.40f)
-        lineTo(w * 0.78f, h * 0.56f)
-        lineTo(w * 0.92f, h * 0.44f)
-        lineTo(w.toFloat(), h * 0.58f)
-        close()
-    }
-    canvas.drawPath(frontMtn, paint)
-
-    // Clouds
-    paint.color = 0xCCFFFFFF.toInt()
-    for ((cx, cy, r) in listOf(
-        Triple(180f, h * 0.12f, 55f),
-        Triple(280f, h * 0.10f, 70f),
-        Triple(380f, h * 0.12f, 50f),
-        Triple(560f, h * 0.09f, 48f),
-        Triple(660f, h * 0.07f, 65f),
-        Triple(760f, h * 0.09f, 52f),
-        Triple(950f, h * 0.14f, 44f),
-        Triple(1040f, h * 0.12f, 58f),
-        Triple(1130f, h * 0.14f, 40f),
-    )) {
-        canvas.drawCircle(cx, cy, r, paint)
-    }
-
-    // Trees
-    for (i in 0..6) {
-        val tx = w * (0.05f + i * 0.135f)
-        val ty = h * 0.58f
-        val th = h * 0.14f + (i % 3) * h * 0.03f
-
-        // Trunk
-        paint.color = 0xFF5D4037.toInt()
-        canvas.drawRect(tx - 9f, ty, tx + 9f, ty + 32f, paint)
-
-        // Foliage (2 layers)
-        paint.color = 0xFF2E7D32.toInt()
-        val tri1 = Path().apply {
-            moveTo(tx, ty - th)
-            lineTo(tx - th * 0.38f, ty - th * 0.28f)
-            lineTo(tx + th * 0.38f, ty - th * 0.28f)
-            close()
+private fun loadBitmapFromUri(context: Context, uri: Uri): Bitmap? {
+    return try {
+        val options = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+        context.contentResolver.openInputStream(uri)?.use {
+            BitmapFactory.decodeStream(it, null, options)
         }
-        canvas.drawPath(tri1, paint)
-
-        paint.color = 0xFF388E3C.toInt()
-        val tri2 = Path().apply {
-            moveTo(tx, ty - th * 0.55f)
-            lineTo(tx - th * 0.48f, ty)
-            lineTo(tx + th * 0.48f, ty)
-            close()
+        options.inSampleSize = calculateSampleSize(options.outWidth, options.outHeight, 2048)
+        options.inJustDecodeBounds = false
+        context.contentResolver.openInputStream(uri)?.use {
+            BitmapFactory.decodeStream(it, null, options)
         }
-        canvas.drawPath(tri2, paint)
+    } catch (e: Exception) {
+        null
     }
+}
 
-    // Wildflowers in foreground
-    val flowerColors = listOf(
-        0xFFFF8F00.toInt(), 0xFFE91E63.toInt(),
-        0xFFFFEB3B.toInt(), 0xFFAB47BC.toInt(), 0xFFFF5722.toInt(),
-    )
-    val rng = java.util.Random(42)
-    for (i in 0..80) {
-        val fx = rng.nextFloat() * w
-        val fy = h * 0.62f + rng.nextFloat() * h * 0.35f
-        paint.color = flowerColors[i % flowerColors.size]
-        canvas.drawCircle(fx, fy, 6f + rng.nextFloat() * 6f, paint)
-        paint.color = 0xFF33691E.toInt()
-        canvas.drawLine(fx, fy, fx, fy + 18f + rng.nextFloat() * 14f, paint)
+private fun calculateSampleSize(width: Int, height: Int, maxDim: Int): Int {
+    var sampleSize = 1
+    while (width / sampleSize > maxDim || height / sampleSize > maxDim) {
+        sampleSize *= 2
     }
-
-    // Water reflection strip
-    paint.color = 0x554FC3F7.toInt()
-    canvas.drawRect(w * 0.3f, h * 0.60f, w * 0.65f, h * 0.72f, paint)
-    paint.color = 0x33FFFFFF.toInt()
-    for (j in 0..4) {
-        val ry = h * 0.615f + j * 16f
-        canvas.drawLine(w * 0.32f, ry, w * 0.63f, ry, paint)
-    }
-
-    return bmp
+    return sampleSize
 }

@@ -40,6 +40,7 @@ import jp.developer.bbee.richuidemo.screen.PictureInPictureScreen
 import jp.developer.bbee.richuidemo.screen.PipContent
 import jp.developer.bbee.richuidemo.screen.PipOverlay
 import jp.developer.bbee.richuidemo.screen.SurfaceDemoScreen
+import jp.developer.bbee.richuidemo.screen.VideoPlayerScreen
 import jp.developer.bbee.richuidemo.screen.WidgetSamplesScreen
 import jp.developer.bbee.richuidemo.screen.rememberPipState
 
@@ -91,6 +92,7 @@ fun AppNavigation() {
                             onNavigateToHideNavOnScroll = { backStack.add(HideNavOnScrollRoute) },
                             onNavigateToSwipeableDualLayout = { backStack.add(SwipeableDualLayoutRoute) },
                             onNavigateToImageSelectionOverlay = { backStack.add(ImageSelectionOverlayRoute) },
+                            onNavigateToVideoPlayer = { backStack.add(VideoPlayerRoute) },
                         )
                     }
 
@@ -176,6 +178,10 @@ fun AppNavigation() {
 
                     entry<ImageSelectionOverlayRoute>(metadata = horizontalSlideMetadata) {
                         ImageSelectionOverlayScreen(onBack = { backStack.removeLastOrNull() })
+                    }
+
+                    entry<VideoPlayerRoute>(metadata = horizontalSlideMetadata) {
+                        VideoPlayerScreen(onBack = { backStack.removeLastOrNull() })
                     }
                 },
             )

@@ -49,6 +49,7 @@ fun HomeScreen(
     onNavigateToPictureInPicture: () -> Unit,
     onNavigateToHideNavOnScroll: () -> Unit,
     onNavigateToSwipeableDualLayout: () -> Unit,
+    onNavigateToVideoPlayer: () -> Unit,
 ) {
     Scaffold(
         topBar = {
@@ -468,6 +469,46 @@ fun HomeScreen(
                             text = "Tap to explore  →",
                             style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onTertiaryContainer,
+                        )
+                    }
+                }
+            }
+
+            item {
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+            }
+
+            item {
+                DemoSectionCard(
+                    title = "Video Player",
+                    description = "ExoPlayer · URL再生 · ローカルファイル · 横画面フルスクリーン",
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = onNavigateToVideoPlayer,
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    ),
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(96.dp)
+                            .padding(horizontal = 20.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                    ) {
+                        Text(
+                            text = "▶  🎬  📱",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSecondaryContainer,
+                        )
+                        Text(
+                            text = "Tap to explore  →",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSecondaryContainer,
                         )
                     }
                 }

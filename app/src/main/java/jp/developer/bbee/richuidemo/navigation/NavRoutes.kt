@@ -37,4 +37,7 @@ data object HideNavOnScrollRoute : NavKey
 data object SwipeableDualLayoutRoute : NavKey
 
 @Serializable
+data object ImageSelectionOverlayRoute : NavKey
+
+@Serializable
 data object VideoPlayerRoute : NavKey

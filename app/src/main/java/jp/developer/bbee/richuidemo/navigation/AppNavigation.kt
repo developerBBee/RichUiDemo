@@ -28,6 +28,7 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
 import jp.developer.bbee.richuidemo.MainActivity
 import jp.developer.bbee.richuidemo.screen.BorderDemoScreen
+import jp.developer.bbee.richuidemo.screen.ImageSelectionOverlayScreen
 import jp.developer.bbee.richuidemo.screen.SwipeableDualLayoutScreen
 import jp.developer.bbee.richuidemo.screen.BubbleMenuScreen
 import jp.developer.bbee.richuidemo.screen.CombinedDemoScreen
@@ -90,6 +91,7 @@ fun AppNavigation() {
                             onNavigateToPictureInPicture = { backStack.add(PictureInPictureRoute) },
                             onNavigateToHideNavOnScroll = { backStack.add(HideNavOnScrollRoute) },
                             onNavigateToSwipeableDualLayout = { backStack.add(SwipeableDualLayoutRoute) },
+                            onNavigateToImageSelectionOverlay = { backStack.add(ImageSelectionOverlayRoute) },
                             onNavigateToVideoPlayer = { backStack.add(VideoPlayerRoute) },
                         )
                     }
@@ -172,6 +174,10 @@ fun AppNavigation() {
 
                     entry<SwipeableDualLayoutRoute>(metadata = horizontalSlideMetadata) {
                         SwipeableDualLayoutScreen(onBack = { backStack.removeLastOrNull() })
+                    }
+
+                    entry<ImageSelectionOverlayRoute>(metadata = horizontalSlideMetadata) {
+                        ImageSelectionOverlayScreen(onBack = { backStack.removeLastOrNull() })
                     }
 
                     entry<VideoPlayerRoute>(metadata = horizontalSlideMetadata) {

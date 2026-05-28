@@ -42,6 +42,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -72,16 +73,20 @@ fun SimpleVideoPlayerScreen(onBack: () -> Unit) {
     val view = LocalView.current
     val window = (context as Activity).window
 
+    var savedPosition by rememberSaveable { mutableLongStateOf(0L) }
+    var savedPlayWhenReady by rememberSaveable { mutableStateOf(true) }
+    var isMuted by rememberSaveable { mutableStateOf(false) }
+
     val exoPlayer = remember {
         ExoPlayer.Builder(context).build().apply {
-            playWhenReady = true
+            volume = if (isMuted) 0f else 1f
+            playWhenReady = savedPlayWhenReady
         }
     }
 
     var isPlaying by remember { mutableStateOf(false) }
     var currentPosition by remember { mutableLongStateOf(0L) }
     var duration by remember { mutableLongStateOf(0L) }
-    var isMuted by remember { mutableStateOf(false) }
     var controlsVisible by remember { mutableStateOf(true) }
     var controlsTimerKey by remember { mutableIntStateOf(0) }
     var seekingPosition by remember { mutableStateOf<Float?>(null) }
@@ -90,6 +95,7 @@ fun SimpleVideoPlayerScreen(onBack: () -> Unit) {
     LaunchedEffect(Unit) {
         exoPlayer.setMediaItem(MediaItem.fromUri(SIMPLE_PLAYER_URL))
         exoPlayer.prepare()
+        if (savedPosition > 0L) exoPlayer.seekTo(savedPosition)
     }
 
     DisposableEffect(exoPlayer) {
@@ -100,6 +106,8 @@ fun SimpleVideoPlayerScreen(onBack: () -> Unit) {
         }
         exoPlayer.addListener(listener)
         onDispose {
+            savedPosition = exoPlayer.currentPosition
+            savedPlayWhenReady = exoPlayer.playWhenReady
             exoPlayer.removeListener(listener)
             exoPlayer.release()
         }

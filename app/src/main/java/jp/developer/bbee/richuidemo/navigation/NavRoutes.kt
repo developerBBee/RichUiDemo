@@ -41,3 +41,6 @@ data object ImageSelectionOverlayRoute : NavKey
 
 @Serializable
 data object VideoPlayerRoute : NavKey
+
+@Serializable
+data object SimpleVideoPlayerRoute : NavKey

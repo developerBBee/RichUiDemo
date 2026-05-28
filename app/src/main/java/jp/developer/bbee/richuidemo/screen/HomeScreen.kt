@@ -51,6 +51,7 @@ fun HomeScreen(
     onNavigateToSwipeableDualLayout: () -> Unit,
     onNavigateToImageSelectionOverlay: () -> Unit,
     onNavigateToVideoPlayer: () -> Unit,
+    onNavigateToSimpleVideoPlayer: () -> Unit,
 ) {
     Scaffold(
         topBar = {
@@ -543,6 +544,46 @@ fun HomeScreen(
                     ) {
                         Text(
                             text = "▶  🎬  📱",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSecondaryContainer,
+                        )
+                        Text(
+                            text = "Tap to explore  →",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSecondaryContainer,
+                        )
+                    }
+                }
+            }
+
+            item {
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+            }
+
+            item {
+                DemoSectionCard(
+                    title = "Simple Video Player",
+                    description = "URL再生 · フルスクリーン · オーバーレイコントロール · 自動非表示 (YouTube風)",
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = onNavigateToSimpleVideoPlayer,
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    ),
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(96.dp)
+                            .padding(horizontal = 20.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                    ) {
+                        Text(
+                            text = "▶  📺  🎮",
                             style = MaterialTheme.typography.titleMedium,
                             color = MaterialTheme.colorScheme.onSecondaryContainer,
                         )

@@ -3,6 +3,7 @@
 package jp.developer.bbee.richuidemo.screen
 
 import android.app.Activity
+import android.view.LayoutInflater
 import android.view.View
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -58,7 +59,6 @@ import androidx.core.view.WindowInsetsControllerCompat
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
-import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
 import jp.developer.bbee.richuidemo.R
 import kotlinx.coroutines.delay
@@ -146,11 +146,8 @@ fun SimpleVideoPlayerScreen(onBack: () -> Unit) {
     ) {
         AndroidView(
             factory = { ctx ->
-                PlayerView(ctx).apply {
+                (LayoutInflater.from(ctx).inflate(R.layout.video_player_view, null) as PlayerView).apply {
                     player = exoPlayer
-                    useController = true
-                    resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT
-                    setControllerLayoutId(R.layout.player_controller_empty)
                     setControllerShowTimeoutMs(CONTROLS_TIMEOUT_MS.toInt())
                     setControllerHideOnTouch(false)
                     addControllerVisibilityListener { visibility ->

@@ -3,6 +3,7 @@
 package jp.developer.bbee.richuidemo.screen
 
 import android.app.Activity
+import android.view.View
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -38,7 +39,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -60,6 +60,7 @@ import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
+import jp.developer.bbee.richuidemo.R
 import kotlinx.coroutines.delay
 
 private const val SIMPLE_PLAYER_URL =
@@ -88,9 +89,8 @@ fun SimpleVideoPlayerScreen(onBack: () -> Unit) {
     var currentPosition by remember { mutableLongStateOf(0L) }
     var duration by remember { mutableLongStateOf(0L) }
     var controlsVisible by remember { mutableStateOf(true) }
-    var controlsTimerKey by remember { mutableIntStateOf(0) }
     var seekingPosition by remember { mutableStateOf<Float?>(null) }
-    var isSeeking by remember { mutableStateOf(false) }
+    var playerViewRef: PlayerView? by remember { mutableStateOf(null) }
 
     LaunchedEffect(Unit) {
         exoPlayer.setMediaItem(MediaItem.fromUri(SIMPLE_PLAYER_URL))
@@ -132,13 +132,6 @@ fun SimpleVideoPlayerScreen(onBack: () -> Unit) {
         }
     }
 
-    // Auto-hide controls after timeout; pauses while seeking to avoid hiding mid-drag
-    LaunchedEffect(controlsTimerKey, isSeeking) {
-        if (isSeeking) return@LaunchedEffect
-        delay(CONTROLS_TIMEOUT_MS)
-        controlsVisible = false
-    }
-
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -147,17 +140,23 @@ fun SimpleVideoPlayerScreen(onBack: () -> Unit) {
                 indication = null,
                 interactionSource = remember { MutableInteractionSource() },
             ) {
-                controlsVisible = !controlsVisible
-                if (controlsVisible) controlsTimerKey++
+                if (controlsVisible) playerViewRef?.hideController()
+                else playerViewRef?.showController()
             },
     ) {
         AndroidView(
             factory = { ctx ->
                 PlayerView(ctx).apply {
                     player = exoPlayer
-                    useController = false
+                    useController = true
                     resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT
-                }
+                    setControllerLayoutId(R.layout.player_controller_empty)
+                    setControllerShowTimeoutMs(CONTROLS_TIMEOUT_MS.toInt())
+                    setControllerHideOnTouch(false)
+                    addControllerVisibilityListener { visibility ->
+                        controlsVisible = (visibility == View.VISIBLE)
+                    }
+                }.also { playerViewRef = it }
             },
             modifier = Modifier
                 .fillMaxSize()
@@ -206,7 +205,7 @@ fun SimpleVideoPlayerScreen(onBack: () -> Unit) {
                     IconButton(
                         onClick = {
                             exoPlayer.seekTo((exoPlayer.currentPosition - 10_000L).coerceAtLeast(0L))
-                            controlsTimerKey++
+                            playerViewRef?.showController()
                         },
                         modifier = Modifier.size(48.dp),
                     ) {
@@ -229,7 +228,7 @@ fun SimpleVideoPlayerScreen(onBack: () -> Unit) {
                         IconButton(
                             onClick = {
                                 if (isPlaying) exoPlayer.pause() else exoPlayer.play()
-                                controlsTimerKey++
+                                playerViewRef?.showController()
                             },
                             modifier = Modifier.fillMaxSize(),
                         ) {
@@ -247,7 +246,7 @@ fun SimpleVideoPlayerScreen(onBack: () -> Unit) {
                     IconButton(
                         onClick = {
                             exoPlayer.seekTo(exoPlayer.currentPosition + 10_000L)
-                            controlsTimerKey++
+                            playerViewRef?.showController()
                         },
                         modifier = Modifier.size(48.dp),
                     ) {
@@ -305,13 +304,14 @@ fun SimpleVideoPlayerScreen(onBack: () -> Unit) {
                             ?: (if (duration > 0) currentPosition.toFloat() / duration else 0f),
                         onValueChange = { v ->
                             seekingPosition = v
-                            isSeeking = true
+                            playerViewRef?.setControllerShowTimeoutMs(0)
+                            playerViewRef?.showController()
                         },
                         onValueChangeFinished = {
                             seekingPosition?.let { exoPlayer.seekTo((it * duration).toLong()) }
                             seekingPosition = null
-                            isSeeking = false
-                            controlsTimerKey++
+                            playerViewRef?.setControllerShowTimeoutMs(CONTROLS_TIMEOUT_MS.toInt())
+                            playerViewRef?.showController()
                         },
                         modifier = Modifier.fillMaxWidth(),
                         colors = SliderDefaults.colors(
@@ -329,7 +329,7 @@ fun SimpleVideoPlayerScreen(onBack: () -> Unit) {
                             onClick = {
                                 isMuted = !isMuted
                                 exoPlayer.volume = if (isMuted) 0f else 1f
-                                controlsTimerKey++
+                                playerViewRef?.showController()
                             },
                         ) {
                             Icon(

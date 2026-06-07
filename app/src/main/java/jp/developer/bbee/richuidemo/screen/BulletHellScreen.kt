@@ -134,12 +134,12 @@ private fun dirVec(angleDeg: Float, speed: Float): V2 {
     return V2(cos(rad) * speed, sin(rad) * speed)
 }
 
-private fun spawnEnemyBullets(g: BulletHellState, enemyPos: V2): List<Bullet> {
-    val e = g.enemy
-    val f = g.frame
-    val sa = e.spiralAngle
-    val phase = enemyPhase(e)
-    val aimedAngle = atan2(g.player.pos.y - enemyPos.y, g.player.pos.x - enemyPos.x) * 180f / PI.toFloat()
+private fun spawnEnemyBullets(enemy: Enemy, playerPos: V2, frame: Long): List<Bullet> {
+    val enemyPos = enemy.pos
+    val f = frame
+    val sa = enemy.spiralAngle
+    val phase = enemyPhase(enemy)
+    val aimedAngle = atan2(playerPos.y - enemyPos.y, playerPos.x - enemyPos.x) * 180f / PI.toFloat()
     val list = mutableListOf<Bullet>()
 
     when (phase) {
@@ -244,8 +244,8 @@ private fun updateGame(g: BulletHellState, dragDelta: V2): BulletHellState {
         spiralAngle = g.enemy.spiralAngle + 2.5f,
     )
 
-    // Generate enemy bullets using the updated enemy position
-    val newEnemyBullets = spawnEnemyBullets(g, newEnemy.pos)
+    // Generate enemy bullets using the updated enemy state (matches its visual rotation/position)
+    val newEnemyBullets = spawnEnemyBullets(newEnemy, player.pos, g.frame)
 
     // Move all bullets and cull out-of-bounds
     val allBullets = (g.bullets + newPlayerBullets + newEnemyBullets).mapNotNull { b ->
@@ -411,13 +411,34 @@ fun BulletHellScreen(onBack: () -> Unit) {
     var dragDelta by remember { mutableStateOf(V2(0f, 0f)) }
     val textMeasurer = rememberTextMeasurer()
 
-    // Main game loop: runs every frame, updates state when initialized
+    // Main game loop: fixed 60Hz simulation timestep, decoupled from display refresh rate
+    // so gameplay speed (bullet velocity, cooldowns, invincibility duration) stays consistent
+    // across devices regardless of whether the screen runs at 60Hz, 90Hz, 120Hz, etc.
     LaunchedEffect(Unit) {
+        val stepMs = 1000.0 / 60.0
+        var accumulator = 0.0
+        var lastFrameTime = -1L
         while (isActive) {
-            withFrameMillis { _ ->
-                val delta = dragDelta
-                dragDelta = V2(0f, 0f)
-                gameState = gameState?.let { updateGame(it, delta) }
+            withFrameMillis { frameTime ->
+                if (lastFrameTime < 0L) lastFrameTime = frameTime
+                val elapsed = (frameTime - lastFrameTime).toDouble()
+                lastFrameTime = frameTime
+                // Cap to avoid a "spiral of death" after a long stall (e.g. backgrounding)
+                accumulator = (accumulator + elapsed).coerceAtMost(stepMs * 5)
+
+                var consumeInput = true
+                while (accumulator >= stepMs) {
+                    val delta = if (consumeInput) {
+                        val d = dragDelta
+                        dragDelta = V2(0f, 0f)
+                        d
+                    } else {
+                        V2(0f, 0f)
+                    }
+                    consumeInput = false
+                    gameState = gameState?.let { updateGame(it, delta) }
+                    accumulator -= stepMs
+                }
             }
         }
     }

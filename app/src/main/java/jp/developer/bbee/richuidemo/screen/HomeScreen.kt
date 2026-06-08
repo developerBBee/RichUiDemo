@@ -52,6 +52,7 @@ fun HomeScreen(
     onNavigateToImageSelectionOverlay: () -> Unit,
     onNavigateToVideoPlayer: () -> Unit,
     onNavigateToSimpleVideoPlayer: () -> Unit,
+    onNavigateToBulletHell: () -> Unit,
 ) {
     Scaffold(
         topBar = {
@@ -551,6 +552,45 @@ fun HomeScreen(
                             text = "Tap to explore  →",
                             style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onSecondaryContainer,
+                        )
+                    }
+                }
+            }
+
+            item {
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+            }
+
+            item {
+                DemoSectionCard(
+                    title = "弾幕シューティング",
+                    description = "Canvas描画 · 60fps ゲームループ · 4フェーズ弾幕 · ドラッグ操作",
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = onNavigateToBulletHell,
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color(0xFF1A1030),
+                    ),
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(96.dp)
+                            .padding(horizontal = 20.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                    ) {
+                        Text(
+                            text = "🚀  💥  ★  🌀",
+                            style = MaterialTheme.typography.titleMedium,
+                        )
+                        Text(
+                            text = "Tap to play  →",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = Color(0xFF88AAFF),
                         )
                     }
                 }

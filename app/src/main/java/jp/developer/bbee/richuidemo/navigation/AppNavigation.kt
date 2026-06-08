@@ -28,6 +28,7 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
 import jp.developer.bbee.richuidemo.MainActivity
 import jp.developer.bbee.richuidemo.screen.BorderDemoScreen
+import jp.developer.bbee.richuidemo.screen.BulletHellScreen
 import jp.developer.bbee.richuidemo.screen.ImageSelectionOverlayScreen
 import jp.developer.bbee.richuidemo.screen.SwipeableDualLayoutScreen
 import jp.developer.bbee.richuidemo.screen.BubbleMenuScreen
@@ -95,6 +96,7 @@ fun AppNavigation() {
                             onNavigateToImageSelectionOverlay = { backStack.add(ImageSelectionOverlayRoute) },
                             onNavigateToVideoPlayer = { backStack.add(VideoPlayerRoute) },
                             onNavigateToSimpleVideoPlayer = { backStack.add(SimpleVideoPlayerRoute) },
+                            onNavigateToBulletHell = { backStack.add(BulletHellRoute) },
                         )
                     }
 
@@ -188,6 +190,10 @@ fun AppNavigation() {
 
                     entry<SimpleVideoPlayerRoute>(metadata = horizontalSlideMetadata) {
                         SimpleVideoPlayerScreen(onBack = { backStack.removeLastOrNull() })
+                    }
+
+                    entry<BulletHellRoute>(metadata = horizontalSlideMetadata) {
+                        BulletHellScreen(onBack = { backStack.removeLastOrNull() })
                     }
                 },
             )

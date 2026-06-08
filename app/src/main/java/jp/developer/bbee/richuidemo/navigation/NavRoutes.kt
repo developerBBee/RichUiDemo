@@ -44,3 +44,6 @@ data object VideoPlayerRoute : NavKey
 
 @Serializable
 data object SimpleVideoPlayerRoute : NavKey
+
+@Serializable
+data object BulletHellRoute : NavKey
